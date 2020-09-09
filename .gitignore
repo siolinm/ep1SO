@@ -1,0 +1,16 @@
+bccsh
+ep1
+*.o
+
+slides.aux 
+slides.fdb_latexmk 
+slides.fls 
+slides.log 
+slides.toc 
+slides.out 
+slides.dvi
+slides.nav
+slides.snm
+
+*.tar
+*.tar.gz
