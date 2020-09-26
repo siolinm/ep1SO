@@ -1,6 +1,6 @@
 DIRNAME    = ep1-lucas-marcos
 SOBJS      = bccsh.o
-EPOBJS     = outroalgo.o outroalgo1.o
+EPOBJS     = ep1.o
 CFLAGS     = -Wall -g -pedantic -Wno-unused-result
 LIBS_BCCSH = -lreadline
 LIBS_EP1   = -lpthread

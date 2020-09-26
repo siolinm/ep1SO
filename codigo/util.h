@@ -1,0 +1,24 @@
+#ifndef _UTIL_H
+#define _UTIL_H
+
+#define nmax 1000
+
+typedef struct processo{
+    char nome[31];
+    int t0, tf, dt, deadline;
+} Processo;
+
+/* numero total de processos */
+int n;
+
+/* numero de mudancas de contexto */
+int mc;
+
+/* modo de saida - d para impressao de informacoes na saida padrao de erro*/
+char mode;
+
+/* tipo de escalonador */
+int escalonador;
+
+
+#endif
