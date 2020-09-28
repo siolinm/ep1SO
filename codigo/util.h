@@ -3,13 +3,13 @@
 
 #define nmax 1000
 
-typedef struct processo{
-    char nome[31];
-    int t0, tf, dt, deadline;
+typedef struct processo {
+	char nome[31];
+	int t0, tf, dt, deadline;
 } Processo;
 
 /* numero total de processos */
-int n;
+int n_processos;
 
 /* numero de mudancas de contexto */
 int mc;
@@ -20,5 +20,12 @@ char mode;
 /* tipo de escalonador */
 int escalonador;
 
+/* o tempo atual da simulação */
+int cur_time;
+
+/* o tempo inicial em que o programa começou
+ * (usado para saber quanto tempo já se passou de simulação)
+ */
+int begin_time;
 
 #endif

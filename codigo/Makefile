@@ -5,6 +5,8 @@ CFLAGS     = -Wall -g -pedantic -Wno-unused-result
 LIBS_BCCSH = -lreadline
 LIBS_EP1   = -lpthread
 
+default: bccsh ep1
+
 bccsh: $(SOBJS)
 	gcc $(CFLAGS) $(SOBJS) -o bccsh $(LIBS_BCCSH)
 
