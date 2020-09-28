@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "pthread.h"
 #include "util.h"
@@ -8,6 +9,7 @@
 
 Processo processo[nmax];
 pthread_t threads[nmax];
+pthread_mutex_t mutex;
 
 void load(char * nome) {
     FILE * arquivo;
@@ -64,15 +66,20 @@ void busy(int dt) {
     begin = time(NULL);
 
     while (1) {
-      now = time(NULL);
+        if (pthread_mutex_trylock(&mutex)) {
+            now = time(NULL);
 
-      ellapsed = now-begin;
+            ellapsed = now-begin;
 
-      printf("Ellapsed = %d Dt = %d\n", ellapsed, dt);
-      if (ellapsed >= dt) break;
+            printf("Ellapsed = %d Dt = %d\n", ellapsed, dt);
+            if (ellapsed >= dt) break;
 
-      /* Algumas operações para usarem a CPU */
-      (rand() + rand()) * rand();
+            /* Algumas operações para usarem a CPU */
+            (rand() + rand()) * rand();
+
+            pthread_mutex_unlock(&mutex);
+        }
+        else sleep(1000);
     }
 }
 
@@ -93,6 +100,7 @@ int main(int argc, char * argv[]){
 
     mc = 0; /* Inicializar mudanças de contexto com zero */
 
+    pthread_mutex_init(&mutex, NULL); // (deixar NULL por enquanto até entender melhor)
     busy(5);
 
     save(argv[3]); /* Salvar a saída no final */
