@@ -41,4 +41,4 @@ tar:
 	rm -Rf ../$(DIRNAME)
 
 clean:
-	rm *.o bccsh ep1 ~
+	rm *.o bccsh ep1 *~

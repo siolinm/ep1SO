@@ -15,13 +15,13 @@
 #define SIZE_CUR_DIR 100
 
 /* variáveis (globais?) usuário e diretório atual ==== */
-char cur_dir[SIZE_CUR_DIR]; 
+char cur_dir[SIZE_CUR_DIR];
 char *cur_user;
 
 /** Função read_command(char **command, char **parameters)
- * Usa GNU readline e GNU history para ler um comando do terminal 
+ * Usa GNU readline e GNU history para ler um comando do terminal
  * e retornar esse comando em command e os parâmetros indicados em parameters.
- */ 
+ */
 void read_command(char **command, char **parameters){
     char prompt_line[500];
 
@@ -36,19 +36,21 @@ void read_command(char **command, char **parameters){
 
     /* retornando o comando e os parâmetros, reaproveitando a memória que já foi alocada por readline */
     int i = 0;
-    
+
     if(*command != NULL){
         while((*command)[i] != ' ' && (*command)[i] != '\0') { i++; }
 
         for(int j = 0; j < 20; parameters[j] = NULL, j++);
-        
+
         parameters[0] = *command;
 
         for(int j = 1; (*command)[i] != '\0'; i++){
             if ((*command)[i] == ' ') {
-                parameters[j] = *command+i+1;
                 (*command)[i] = '\0';
-                j++;
+                if ((*command)[i+1] != ' ' && (*command)[i+1] != '\0') {
+                  parameters[j] = *command+i+1;
+                  j++;
+                }
             }
         }
     }
@@ -78,8 +80,8 @@ int main(int argc, char const *argv[]) {
             pid_t pid = atoi(parameters[2]);
             kill(pid, -atoi(parameters[1]));
         }
-        else if(!strcmp(command, "ln") && !strcmp(parameters[1], "-s")){            
-            symlink(parameters[2], parameters[3]); 
+        else if(!strcmp(command, "ln") && !strcmp(parameters[1], "-s")){
+            symlink(parameters[2], parameters[3]);
         }
         else{
             if(fork() != 0){
@@ -87,7 +89,7 @@ int main(int argc, char const *argv[]) {
                 waitpid(-1, &status, 0);
             }
             else{
-                /* código do processo filho */            
+                /* código do processo filho */
                 execve(command, parameters, NULL);
                 exit(0);
             }

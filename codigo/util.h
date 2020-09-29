@@ -6,6 +6,7 @@
 typedef struct processo {
 	char nome[31];
 	int t0, tf, dt, deadline;
+	int rt; /* remaning time */
 } Processo;
 
 /* numero total de processos */
