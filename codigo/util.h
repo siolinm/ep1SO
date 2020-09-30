@@ -6,7 +6,9 @@
 typedef struct processo {
 	char nome[31];
 	int t0, tf, dt, deadline;
-	int rt; /* remaning time */
+	int rt;                      /* remaning time */
+	int ellapsed;                /* quanto tempo o precesso já executou */
+	int tempo_de_entrada_na_CPU; /* salva o tempo atual no momento que o processo entrou na CPU */
 } Processo;
 
 /* numero total de processos */

@@ -7,19 +7,36 @@
 #include "util.h"
 /* #include "fila.h" */
 
+#define dt(i) processo[i].dt
+#define t0(i) processo[i].t0
+#define dealine(i) processo[i].deadline
+#define tf(i) processo[i].tf
+#define rt(i) processo[i].rt
+#define ellapsed(i) processo[i].ellapsed
+#define entrada_CPU(i) processo[i].tempo_de_entrada_na_CPU
+
+
+
 Processo processo[nmax];
 pthread_t threads[nmax];
-/* pthread_mutex_t mutex[nmax]; */
+pthread_mutex_t mutex[nmax];
 int semaforo = 0; /* se semaforo == PID da thread i, enquanto ela está na CPU */
 
 void setSemaforo(int value) {
+    if (semaforo != -1) pthread_mutex_lock(&mutex[semaforo]);
+
+    if (value != -1) pthread_mutex_unlock(&mutex[value]);
+
     if (value != semaforo && value != -1) {
         mc++;
         if (mode == 'd') {
-            fprintf(stderr, "Mudança de contexto (total = %d) da thread %d para a %d.\n", mc, semaforo, value);
+            fprintf(stderr, "Mudança de contexto (total = %d).\n"
+                            "Da thread %d para a %d no instante %d.\n\n",
+                            mc, semaforo, value, cur_time);
         }
     }
     semaforo = value;
+    if (value != -1) processo[value].tempo_de_entrada_na_CPU = cur_time;
 }
 
 void load(char * nome) {
@@ -33,8 +50,9 @@ void load(char * nome) {
     while(!feof(arquivo) &&
         fscanf(arquivo, "%s %d %d %d\n", processo[n_processos].nome, &processo[n_processos].t0,
         &processo[n_processos].dt, &processo[n_processos].deadline)) {
-        processo[n_processos].tf = -1;
-        processo[n_processos].rt = processo[n_processos].dt;
+        tf(n_processos) = -1;
+        rt(n_processos) = dt(n_processos);
+        ellapsed(n_processos) = 0;
 
         if(mode == 'd')
             fprintf(stderr, "Processo %d chegou ao sistema: %s %d %d %d\n",
@@ -69,45 +87,32 @@ void how_to_use() {
         "\nonde d é um parâmetro opcional.\n");
 }
 
+void print_chegada_processo(int PID) {
+    fprintf(stderr, "Processo %s chegou no sistema no instante %d.\n"
+                    "Conteudo do trace: %s %d %d %d\n\n",
+                    processo[PID].nome, cur_time, 
+                    processo[PID].nome, processo[PID].t0, processo[PID].dt, processo[PID].deadline);
+}
+
+void print_finalizacao_processo(int PID) {
+    fprintf(stderr, "Processo %s finalizado no instante %d.\n"
+                    "Conteudo da saída: %s %d %d\n\n",
+                    processo[PID].nome, cur_time,
+                    processo[PID].nome, processo[PID].tf, processo[PID].tf - processo[PID].t0);
+}
+
 /* Função que fica trabalhando na CPU, representando um processo
  * do escalonador.
  */
 void * busy(void * argv) {
-    time_t begin, now;
-    time_t beginaux;
     int dummy = 0;
-    int ellapsed = 0;
-    int *temp = (int *) argv;
-    int PID = temp[0];
-    int deltat = temp[1];
+    int PID = ((int *) argv)[0];
+    free(argv);
 
-    begin = beginaux = time(NULL);
-
-    // fprintf(stderr, "Eu sou %d.\n", PID);
-    while (1) {
-        if (semaforo == PID) {
-            now = time(NULL);
-
-            ellapsed += now - begin;
-            processo[PID].rt = processo[PID].dt - ellapsed;
-            begin = now;
-
-            // fprintf(stderr, "Thread %d executada.\n", PID);
-            if (ellapsed >= deltat) {
-                // fprintf(stderr, "Ellapsed = %d Dt = %d\n", ellapsed, deltat);
-                processo[PID].tf = now - beginaux;
-                setSemaforo(-1);
-                break;
-            }
-
-            /* Algumas operações para usarem a CPU */
-            dummy = (dummy + rand()) * rand();
-        }
-        else {
-            usleep(500000); /* 0.5 segundos */
-            begin = time(NULL);
-            /* fprintf(stderr, "zzz semaforo = %d , sou %d\n", semaforo, PID); */
-        }
+    while (processo[PID].tf != -1) {
+        pthread_mutex_lock(&mutex[PID]);
+        dummy = (dummy + rand()) * rand();
+        pthread_mutex_unlock(&mutex[PID]);
     }
 
     return NULL;
@@ -115,13 +120,27 @@ void * busy(void * argv) {
 
 /* First Come First Served */
 void fcfs() {
-    int processo_atual = 0;
+    int atual = -1;
+    int proximo_processo_a_chegar = 0;
+
+    cur_time = t0(0);
+    setSemaforo(++atual);
+
     while (semaforo != n_processos) {
-        if (semaforo == -1 && cur_time >= processo[processo_atual].t0) {
-            setSemaforo(processo_atual++);
-        } else
-            sleep(1);
-        cur_time = time(NULL) - begin_time;
+        if (mode == 'd')
+            while (cur_time == t0(proximo_processo_a_chegar)) 
+                print_chegada_processo(proximo_processo_a_chegar++);
+
+        sleep(1);
+
+        cur_time++;
+        ellapsed(atual) += 1;
+        if (ellapsed(atual) == dt(atual)) {
+            tf(atual) = cur_time;
+            print_finalizacao_processo(atual);
+            setSemaforo(++atual);
+        }
+       
     }
 }
 
@@ -168,7 +187,6 @@ void srtn() {
     int fila[nmax];
     int ini, fim;
 
-
     // fila = [ a, A , B, C, D , E,   , ... ]                       
                    
     /* O primeiro processo é um corner, pois não precisa verificar se há
@@ -195,7 +213,7 @@ void srtn() {
     // fila = [0, -1, ... ]
 
     while (ini <= n_processos) {
-        if ((semaforo == -1 || processo[semaforo].tf != -1) && ini < fim) {
+        if (semaforo == -1 || processo[semaforo].tf != -1) {
             /* fprintf(stderr, "Semaforo = %d ", semaforo);
             fprintf(stderr, "Mudando para %d\n", fila[ini]);
 
@@ -205,7 +223,7 @@ void srtn() {
             fprintf(stderr, "]\n"); */
 
             ini++;
-            fprintf(stderr, "%d\n", ini);
+            // fprintf(stderr, "%d\n", ini);
         }
         
         while (prox < n_processos && cur_time >= processo[prox].t0) {
@@ -228,6 +246,7 @@ void srtn() {
 /* Round Robin */
 void round_robin() {
     int todos_terminaram = 0;
+    int proximo_processo_a_chegar = 0;
     int quantum = 2;
 
     while (!todos_terminaram) {
@@ -243,18 +262,17 @@ void round_robin() {
                 setSemaforo(i);
                 sleep(1);
                 if (processo[i].tf == -1) todos_terminaram = 0;
+
+                cur_time = time(NULL) - begin_time;
+                if (mode == 'd')
+                    while (cur_time == processo[proximo_processo_a_chegar].t0) 
+                        print_chegada_processo(proximo_processo_a_chegar++);
             }
         }
     }
 }
 
 int main(int argc, char * argv[]) {
-    // fprintf(stderr, "argc = %d\n", argc);
-    // for (int i = 0; i < argc; i++) {
-    //     fprintf(stderr, "argv[%d] = %s\n", i, argv[i]);
-    // }
-
-
     /* Checando se os argumentos foram passados corretamente */
     if (argc < 4) {
         how_to_use();
@@ -275,40 +293,33 @@ int main(int argc, char * argv[]) {
 
     int * temp;
     for (int i = 0; i < n_processos; i++) {
-        temp = malloc(sizeof(int) * 2);
-        temp[0] = i;
-        temp[1] = processo[i].dt;
+        temp = malloc(sizeof(int));
+        *temp = i;
 
         // fprintf(stderr, "Criando thread %d com dt = %d.\n", temp[0], temp[1]);
         pthread_create(&threads[i], NULL, busy, (void *) temp);
     }
 
     begin_time = time(NULL); /* O começo da simulação */ 
-
-    while (time(NULL) == begin_time) {
-        usleep(5000);
-    }
+    while (time(NULL) == begin_time) usleep(5000);
     begin_time = time(NULL);
 
     cur_time = processo[0].t0;
 
     /* Escalonador entra aqui */
-    switch (escalonador)
-    {
-    case 1:
-        fcfs();
-        break;
-    case 2:
-        srtn();
-        break;
-
-    case 3:
-        round_robin();
-        break;
-
-    default:
-        fprintf(stderr, "Argumento do escalonador errado (deve ser um número entre 1 e 3).\n");
-        return 0;
+    switch (escalonador) {
+        case 1:
+            fcfs();
+            break;
+        case 2:
+            srtn();
+            break;
+        case 3:
+            round_robin();
+            break;
+        default:
+            fprintf(stderr, "Argumento do escalonador errado (deve ser um número entre 1 e 3).\n");
+            return 0;
     }
 
     for (int i = 0; i < n_processos; i++)
