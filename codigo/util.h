@@ -26,9 +26,4 @@ int escalonador;
 /* o tempo atual da simulação */
 int cur_time;
 
-/* o tempo inicial em que o programa começou
- * (usado para saber quanto tempo já se passou de simulação)
- */
-int begin_time;
-
 #endif

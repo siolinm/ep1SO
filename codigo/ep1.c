@@ -15,19 +15,23 @@
 #define ellapsed(i) processo[i].ellapsed
 #define entrada_CPU(i) processo[i].tempo_de_entrada_na_CPU
 
-
-
 Processo processo[nmax];
 pthread_t threads[nmax];
 pthread_mutex_t mutex[nmax];
 int semaforo = 0; /* se semaforo == PID da thread i, enquanto ela está na CPU */
+int primeiro_semaforo = 1;
 
 void setSemaforo(int value) {
-    if (semaforo != -1) pthread_mutex_lock(&mutex[semaforo]);
+    if (semaforo != -1){
+        
+        pthread_mutex_lock(&mutex[semaforo]);
+    } 
 
-    if (value != -1) pthread_mutex_unlock(&mutex[value]);
+    if (value != -1){
+        pthread_mutex_unlock(&mutex[value]);
+    } 
 
-    if (value != semaforo && value != -1) {
+    if (value != semaforo && value != -1 && !primeiro_semaforo) {
         mc++;
         if (mode == 'd') {
             fprintf(stderr, "Mudança de contexto (total = %d).\n"
@@ -35,6 +39,8 @@ void setSemaforo(int value) {
                             mc, semaforo, value, cur_time);
         }
     }
+    else if(primeiro_semaforo) primeiro_semaforo = 0;
+
     semaforo = value;
     if (value != -1) processo[value].tempo_de_entrada_na_CPU = cur_time;
 }
@@ -109,7 +115,7 @@ void * busy(void * argv) {
     int PID = ((int *) argv)[0];
     free(argv);
 
-    while (processo[PID].tf != -1) {
+    while (tf(PID) != -1) {
         pthread_mutex_lock(&mutex[PID]);
         dummy = (dummy + rand()) * rand();
         pthread_mutex_unlock(&mutex[PID]);
@@ -121,15 +127,14 @@ void * busy(void * argv) {
 /* First Come First Served */
 void fcfs() {
     int atual = -1;
-    int proximo_processo_a_chegar = 0;
+    int prox = 0;
 
-    cur_time = t0(0);
     setSemaforo(++atual);
 
     while (semaforo != n_processos) {
         if (mode == 'd')
-            while (cur_time == t0(proximo_processo_a_chegar)) 
-                print_chegada_processo(proximo_processo_a_chegar++);
+            while (cur_time == t0(prox)) 
+                print_chegada_processo(prox++);
 
         sleep(1);
 
@@ -146,23 +151,18 @@ void fcfs() {
 
 void insere_na_fila(int prox, int fila[nmax], int *ini, int *fim) {
     int cur = *fim - 1;
-    // fprintf(stderr, "Inserindo %d fim = %d ini = %d\n", prox, *fim, *ini);
-
-    // fprintf(stderr, "cur = %d processo[prox].rt = %d processo[fila[cur]].rt = %d\n", cur, 
-    //    processo[prox].rt, processo[fila[cur]].rt);
-    while (cur > ((*ini) - 1) && processo[prox].rt < processo[fila[cur]].rt) {
+    
+    while (cur > ((*ini) - 1) && rt(prox) < rt(fila[cur])) {
         fila[cur+1] = fila[cur]; 
         cur--;
     }
-    // fprintf(stderr, "cur parou em %d\n", cur);
+
     fila[cur+1] = prox;
 
-    if (processo[prox].rt < processo[fila[cur]].rt) { /* Preempção */
+    if (rt(prox) < rt(fila[cur])) { /* Preempção */
         fila[cur+1] = fila[cur];
         fila[cur] = prox;
     }
-
-    // fila = [ 0, -1 ,  ,  ,   ,  ,   , ... ]                       
 
     fila[++(*fim)] = -1;
 }
@@ -183,90 +183,81 @@ void insere_na_fila(int prox, int fila[nmax], int *ini, int *fim) {
  * * semaforo = fila[ini-1]
  */
 void srtn() {
-    int prox;
+    int prox, atual;
     int fila[nmax];
     int ini, fim;
-
-    // fila = [ a, A , B, C, D , E,   , ... ]                       
                    
     /* O primeiro processo é um corner, pois não precisa verificar se há
      * alguém com menos remaning time do que ele (já que foi o primeiro
      * a chegar).
      */
-
     prox = 1;
     fila[0] = 0;
     fila[1] = -1;
     ini = fim = 1;
 
-    while (prox < n_processos && cur_time >= processo[prox].t0) {
-        /*fprintf(stderr, "Fila = [");
-        for (int i = 0; i < n_processos; i++) 
-            fprintf(stderr, "%d (%d), ", fila[i], ((fila[i] != -1 && fila[i] < 7) ? processo[fila[i]].rt : -1));
-        fprintf(stderr, "]\n"); */
-
-        insere_na_fila(prox, fila, &ini, &fim);
-        prox++;
-    }
-    setSemaforo(fila[ini-1]); 
-
-    // fila = [0, -1, ... ]
+    if (mode == 'd')
+        print_chegada_processo(0);
 
     while (ini <= n_processos) {
-        if (semaforo == -1 || processo[semaforo].tf != -1) {
-            /* fprintf(stderr, "Semaforo = %d ", semaforo);
-            fprintf(stderr, "Mudando para %d\n", fila[ini]);
-
-            fprintf(stderr, "Fila = [");
-            for (int i = 0; i < n_processos; i++) 
-                fprintf(stderr, "%d (%d), ", fila[i], ((fila[i] != -1 && fila[i] < 7) ? processo[fila[i]].rt : -1));
-            fprintf(stderr, "]\n"); */
-
-            ini++;
-            // fprintf(stderr, "%d\n", ini);
-        }
-        
-        while (prox < n_processos && cur_time >= processo[prox].t0) {
-            /* fprintf(stderr, "Fila = [");
-            for (int i = 0; i < n_processos; i++) 
-                fprintf(stderr, "%d (%d), ", fila[i], ((fila[i] != -1 && fila[i] < 7) ? processo[fila[i]].rt : -1));
-            fprintf(stderr, "]\n"); */
-
+        while (prox < n_processos && cur_time >= t0(prox)) {
+            if (mode == 'd')
+                print_chegada_processo(prox);
+            
             insere_na_fila(prox, fila, &ini, &fim);
             prox++;
         }
-
-        // fprintf(stderr, "fila[ini-1] = %d\n", fila[ini-1]);
-        setSemaforo(fila[ini-1]);
-        usleep(500000);
-        cur_time = time(NULL) - begin_time;
+        /* atualiza quem deve rodar (se houve alguma alteração) */
+        atual = fila[ini-1];
+        setSemaforo(atual);
+        
+        sleep(1);
+        
+        /* 1 segundo se passou */
+        cur_time++;
+        ellapsed(atual) += 1;
+        rt(atual) -= 1;
+        
+        if (ellapsed(atual) == dt(atual)) {
+            tf(atual) = cur_time;
+            print_finalizacao_processo(atual);
+            /* ini anda e agora ini-1 é o novo primeiro da fila (possivelmente fila[ini-1] é -1) */            
+            atual = fila[ini++];
+            setSemaforo(atual);
+        }
     }
 }
 
 /* Round Robin */
 void round_robin() {
     int todos_terminaram = 0;
-    int proximo_processo_a_chegar = 0;
+    int prox = 0;
     int quantum = 2;
 
     while (!todos_terminaram) {
         todos_terminaram = 1;
-        for (int i = 0; i < n_processos; i++) {
-            cur_time = time(NULL) - begin_time;
+        for (int atual = 0; atual < n_processos; atual++) {
 
-            if (processo[i].t0 > cur_time) {
-                i = -1; continue;
+            if (t0(atual) > cur_time) {
+                atual = -1; continue;
             }
 
-            for (int j = 0; j < quantum && processo[i].tf == -1 ; j++) {
-                setSemaforo(i);
-                sleep(1);
-                if (processo[i].tf == -1) todos_terminaram = 0;
-
-                cur_time = time(NULL) - begin_time;
+            for (int j = 0; j < quantum && tf(atual) == -1; j++) {
                 if (mode == 'd')
-                    while (cur_time == processo[proximo_processo_a_chegar].t0) 
-                        print_chegada_processo(proximo_processo_a_chegar++);
+                    while (cur_time == t0(prox)) 
+                        print_chegada_processo(prox++);
+
+                setSemaforo(atual);
+                sleep(1);
+                cur_time++;            
+                
+                ellapsed(atual) += 1;
+                if (ellapsed(atual) == dt(atual)) {
+                    tf(atual) = cur_time;
+                    print_finalizacao_processo(atual);
+                    break;
+                }
+                else todos_terminaram = 0;                
             }
         }
     }
@@ -296,15 +287,13 @@ int main(int argc, char * argv[]) {
         temp = malloc(sizeof(int));
         *temp = i;
 
-        // fprintf(stderr, "Criando thread %d com dt = %d.\n", temp[0], temp[1]);
         pthread_create(&threads[i], NULL, busy, (void *) temp);
     }
 
-    begin_time = time(NULL); /* O começo da simulação */ 
-    while (time(NULL) == begin_time) usleep(5000);
-    begin_time = time(NULL);
-
-    cur_time = processo[0].t0;
+    /*
+        a simulação avança 
+    */
+    cur_time = t0(0);
 
     /* Escalonador entra aqui */
     switch (escalonador) {
