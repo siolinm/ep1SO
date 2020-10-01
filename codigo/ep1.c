@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <unistd.h>
+#include <pthread.h>
+#include <sched.h>
 
-#include "pthread.h"
 #include "util.h"
 /* #include "fila.h" */
 
@@ -14,33 +14,44 @@
 #define rt(i) processo[i].rt
 #define ellapsed(i) processo[i].ellapsed
 #define entrada_CPU(i) processo[i].tempo_de_entrada_na_CPU
+#define cpu(i) processo[i].cpu
 
 Processo processo[nmax];
 pthread_t threads[nmax];
 pthread_mutex_t mutex[nmax];
 int semaforo = 0; /* se semaforo == PID da thread i, enquanto ela está na CPU */
 int ultimo_executando = -1;
+int entrei;
 
 void setSemaforo(int value) {
-    if (semaforo != -1){        
+    if(semaforo == value) return;
+
+    if (semaforo != -1){
+        // printar cpu(semaforo);
+        if(mode == 'd')
+            fprintf(stderr, "A thread %d finalizou a execução na CPU %d\n\n", semaforo, cpu(semaforo));
         pthread_mutex_lock(&mutex[semaforo]);
-    } 
+    }
 
     if (value != -1){        
+        entrei = 1;
         pthread_mutex_unlock(&mutex[value]);
     }
 
-    if (value != semaforo && value != -1 && semaforo != -1 && tf(semaforo) == -1) {
+    if (value != -1 && ultimo_executando != -1 && tf(ultimo_executando) == cur_time) {
         mc++;
         if (mode == 'd') {
             fprintf(stderr, "Mudança de contexto (total = %d).\n"
                             "Da thread %d para a %d no instante %d.\n\n",
-                            mc, semaforo, value, cur_time);
+                            mc, ultimo_executando, value, cur_time);
         }
-    }    
+    }
 
     semaforo = value;
-    if (value != -1) entrada_CPU(value) = cur_time;
+    if (value != -1){
+        entrada_CPU(value) = cur_time;
+        ultimo_executando = value;
+    } 
 }
 
 void load(char * nome) {
@@ -109,16 +120,23 @@ void print_finalizacao_processo(int PID) {
  * do escalonador.
  */
 void * busy(void * argv) {
-    int dummy = 0;
+    // int dummy = 0;
     int PID = ((int *) argv)[0];
+    int cpu;
     free(argv);
 
     while (tf(PID) == -1) {
         pthread_mutex_lock(&mutex[PID]);
-        dummy = (dummy + rand()) * rand();
-        /* dorme por 50.10^{-6}s para não consumir muita CPU */
-        // usleep(1);
-        /*fprintf(stderr, "%d esta rodando\n", PID);*/
+        cpu = sched_getcpu();
+        if(entrei == 1 && mode == 'd'){
+            fprintf(stderr, "A thread %d começou a usar a CPU %d\n\n", PID, cpu);
+            cpu(PID) = cpu;
+            entrei = 0;
+        }
+        else if (cpu != cpu(PID) && mode == 'd'){
+            fprintf(stderr, "A thread %d parou de usar a CPU %d e começou a usar a CPU %d\n\n", PID, cpu(PID), cpu);
+            cpu(PID) = cpu;            
+        }
         pthread_mutex_unlock(&mutex[PID]);
     }
 
@@ -307,6 +325,7 @@ int main(int argc, char * argv[]) {
         a simulação avança 
     */
     cur_time = t0(0);
+    entrei = 1;
 
     /* Escalonador entra aqui */
     switch (escalonador) {
