@@ -19,30 +19,28 @@ Processo processo[nmax];
 pthread_t threads[nmax];
 pthread_mutex_t mutex[nmax];
 int semaforo = 0; /* se semaforo == PID da thread i, enquanto ela está na CPU */
-int primeiro_semaforo = 1;
+int ultimo_executando = -1;
 
 void setSemaforo(int value) {
-    if (semaforo != -1){
-        
+    if (semaforo != -1){        
         pthread_mutex_lock(&mutex[semaforo]);
     } 
 
-    if (value != -1){
+    if (value != -1){        
         pthread_mutex_unlock(&mutex[value]);
-    } 
+    }
 
-    if (value != semaforo && value != -1 && !primeiro_semaforo) {
+    if (value != semaforo && value != -1 && semaforo != -1 && tf(semaforo) == -1) {
         mc++;
         if (mode == 'd') {
             fprintf(stderr, "Mudança de contexto (total = %d).\n"
                             "Da thread %d para a %d no instante %d.\n\n",
                             mc, semaforo, value, cur_time);
         }
-    }
-    else if(primeiro_semaforo) primeiro_semaforo = 0;
+    }    
 
     semaforo = value;
-    if (value != -1) processo[value].tempo_de_entrada_na_CPU = cur_time;
+    if (value != -1) entrada_CPU(value) = cur_time;
 }
 
 void load(char * nome) {
@@ -115,21 +113,26 @@ void * busy(void * argv) {
     int PID = ((int *) argv)[0];
     free(argv);
 
-    while (tf(PID) != -1) {
+    while (tf(PID) == -1) {
         pthread_mutex_lock(&mutex[PID]);
         dummy = (dummy + rand()) * rand();
+        /* dorme por 50.10^{-6}s para não consumir muita CPU */
+        // usleep(1);
+        /*fprintf(stderr, "%d esta rodando\n", PID);*/
         pthread_mutex_unlock(&mutex[PID]);
     }
+
+    pthread_mutex_destroy(&mutex[PID]);
 
     return NULL;
 }
 
 /* First Come First Served */
 void fcfs() {
-    int atual = -1;
+    int atual = 0;
     int prox = 0;
 
-    setSemaforo(++atual);
+    setSemaforo(atual);
 
     while (semaforo != n_processos) {
         if (mode == 'd')
@@ -239,7 +242,16 @@ void round_robin() {
         for (int atual = 0; atual < n_processos; atual++) {
 
             if (t0(atual) > cur_time) {
-                atual = -1; continue;
+                if(todos_terminaram){
+                    atual--;
+                    sleep(1);
+                    cur_time++;
+                }
+                else{
+                    todos_terminaram = 1;
+                    atual = -1;
+                }
+                continue;
             }
 
             for (int j = 0; j < quantum && tf(atual) == -1; j++) {
@@ -249,7 +261,7 @@ void round_robin() {
 
                 setSemaforo(atual);
                 sleep(1);
-                cur_time++;            
+                cur_time++;
                 
                 ellapsed(atual) += 1;
                 if (ellapsed(atual) == dt(atual)) {
@@ -257,7 +269,7 @@ void round_robin() {
                     print_finalizacao_processo(atual);
                     break;
                 }
-                else todos_terminaram = 0;                
+                else if(j == quantum - 1) todos_terminaram = 0;                
             }
         }
     }
@@ -286,7 +298,8 @@ int main(int argc, char * argv[]) {
     for (int i = 0; i < n_processos; i++) {
         temp = malloc(sizeof(int));
         *temp = i;
-
+        pthread_mutex_init(&mutex[i], NULL);
+        pthread_mutex_lock(&mutex[i]);
         pthread_create(&threads[i], NULL, busy, (void *) temp);
     }
 
