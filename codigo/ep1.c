@@ -5,11 +5,13 @@
 #include <sched.h>
 
 #include "util.h"
+#include "fila_rr.h"
 /* #include "fila.h" */
 
+#define nome(i) processo[i].nome
 #define dt(i) processo[i].dt
 #define t0(i) processo[i].t0
-#define dealine(i) processo[i].deadline
+#define deadline(i) processo[i].deadline
 #define tf(i) processo[i].tf
 #define rt(i) processo[i].rt
 #define ellapsed(i) processo[i].ellapsed
@@ -29,16 +31,16 @@ void setSemaforo(int value) {
     if (semaforo != -1){
         // printar cpu(semaforo);
         if(mode == 'd')
-            fprintf(stderr, "A thread %d finalizou a execução na CPU %d\n\n", semaforo, cpu(semaforo));
+            fprintf(stderr, "A thread %d parou de executar na CPU %d\n\n", semaforo, cpu(semaforo));
         pthread_mutex_lock(&mutex[semaforo]);
     }
 
-    if (value != -1){        
+    if (value != -1){
         entrei = 1;
         pthread_mutex_unlock(&mutex[value]);
     }
 
-    if (value != -1 && ultimo_executando != -1 && tf(ultimo_executando) == cur_time) {
+    if (value != -1 && ultimo_executando != -1 && (tf(ultimo_executando) == -1 || tf(ultimo_executando) == cur_time)) {
         mc++;
         if (mode == 'd') {
             fprintf(stderr, "Mudança de contexto (total = %d).\n"
@@ -63,16 +65,16 @@ void load(char * nome) {
 
     n_processos = 0;
     while(!feof(arquivo) &&
-        fscanf(arquivo, "%s %d %d %d\n", processo[n_processos].nome, &processo[n_processos].t0,
-        &processo[n_processos].dt, &processo[n_processos].deadline)) {
+        fscanf(arquivo, "%s %d %d %d\n", nome(n_processos), &t0(n_processos),
+        &dt(n_processos), &deadline(n_processos))){
         tf(n_processos) = -1;
         rt(n_processos) = dt(n_processos);
         ellapsed(n_processos) = 0;
 
         if(mode == 'd')
             fprintf(stderr, "Processo %d chegou ao sistema: %s %d %d %d\n",
-                n_processos, processo[n_processos].nome, processo[n_processos].t0,
-                processo[n_processos].dt, processo[n_processos].deadline);
+                n_processos, nome(n_processos), t0(n_processos),
+                dt(n_processos), deadline(n_processos));
 
         n_processos++; /* Incrementando o número de processos */
     }
@@ -83,15 +85,21 @@ void load(char * nome) {
 void save(char * nome){
     FILE * arquivo;
     arquivo = fopen(nome, "w");
+    int deadlines = 0;
+
 
     if (arquivo == NULL)
         fprintf(stderr, "Falha ao abrir o arquivo de saída.\n");
 
-    for(int i = 0; i < n_processos; i++)
-        fprintf(arquivo, "%s %d %d\n", processo[i].nome, processo[i].tf, processo[i].tf - processo[i].t0);
+    for(int i = 0; i < n_processos; i++){
+        fprintf(arquivo, "%s %d %d\n", processo[i].nome, tf(i), tf(i) - t0(i));
+        deadlines += (tf(i) > deadline(i));
+    }
 
     fprintf(arquivo, "%d", mc);
-    fprintf(arquivo, "\n");
+    
+    /* tirar depois */
+    fprintf(arquivo, "\n%d", deadlines);
 
     fclose(arquivo);
 }
@@ -135,7 +143,7 @@ void * busy(void * argv) {
         }
         else if (cpu != cpu(PID) && mode == 'd'){
             fprintf(stderr, "A thread %d parou de usar a CPU %d e começou a usar a CPU %d\n\n", PID, cpu(PID), cpu);
-            cpu(PID) = cpu;            
+            cpu(PID) = cpu;
         }
         pthread_mutex_unlock(&mutex[PID]);
     }
@@ -165,8 +173,7 @@ void fcfs() {
             tf(atual) = cur_time;
             print_finalizacao_processo(atual);
             setSemaforo(++atual);
-        }
-       
+        }       
     }
 }
 
@@ -274,20 +281,20 @@ void round_robin() {
 
             for (int j = 0; j < quantum && tf(atual) == -1; j++) {
                 if (mode == 'd')
-                    while (cur_time == t0(prox)) 
+                    while (cur_time == t0(prox))
                         print_chegada_processo(prox++);
 
                 setSemaforo(atual);
                 sleep(1);
                 cur_time++;
-                
+
                 ellapsed(atual) += 1;
                 if (ellapsed(atual) == dt(atual)) {
                     tf(atual) = cur_time;
                     print_finalizacao_processo(atual);
                     break;
                 }
-                else if(j == quantum - 1) todos_terminaram = 0;                
+                else if(j == quantum - 1) todos_terminaram = 0;
             }
         }
     }
