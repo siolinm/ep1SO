@@ -12,10 +12,12 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 
-#define SIZE_CUR_DIR 100
+#define CUR_DIR_SIZE 100
+#define PROMPT_SIZE 500
+#define MAX_PARAMETERS 5
 
 /* variáveis (globais?) usuário e diretório atual ==== */
-char cur_dir[SIZE_CUR_DIR];
+char cur_dir[CUR_DIR_SIZE];
 char *cur_user;
 
 /** Função read_command(char **command, char **parameters)
@@ -23,7 +25,7 @@ char *cur_user;
  * e retornar esse comando em command e os parâmetros indicados em parameters.
  */
 void read_command(char **command, char **parameters){
-    char prompt_line[500];
+    char prompt_line[PROMPT_SIZE];
 
     /* imprimindo o prompt */
     cur_user = getenv("USER");
@@ -59,7 +61,7 @@ void read_command(char **command, char **parameters){
 int main(int argc, char const *argv[]) {
     /* comando e parâmetro lidos no terminal */
     char *command;
-    char *parameters[20];
+    char *parameters[MAX_PARAMETERS];
     /* variável devolvida pelo método waitpid */
     int status;
 
@@ -68,8 +70,7 @@ int main(int argc, char const *argv[]) {
 
         /* if para syscalls */
         if(command == NULL){
-            printf("\n");
-            rl_clear_history();
+            printf("\n");            
             exit(0);
         }
         else if(!strcmp(command, "mkdir")){

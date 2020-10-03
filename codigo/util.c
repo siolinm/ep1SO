@@ -63,7 +63,6 @@ void save(char * nome) {
     arquivo = fopen(nome, "w");
     int deadlines = 0;
 
-
     if (arquivo == NULL)
         fprintf(stderr, "Falha ao abrir o arquivo de saída.\n");
 

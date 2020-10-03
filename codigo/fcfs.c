@@ -5,9 +5,10 @@ void fcfs() {
     int atual = 0;
     int prox = 0;
 
+    print_chegada_processo(prox++);
     setSemaforo(atual);
 
-    while (semaforo != n_processos) {
+    while (atual != n_processos) {
         while (cur_time == t0(prox))
             print_chegada_processo(prox++);
 
@@ -18,7 +19,10 @@ void fcfs() {
         if (ellapsed(atual) == dt(atual)) {
             tf(atual) = cur_time;
             print_finalizacao_processo(atual);
-            setSemaforo(++atual);
+            if(atual < n_processos - 1)
+                setSemaforo(++atual);
+            else
+                atual = n_processos;            
         }
     }
 }

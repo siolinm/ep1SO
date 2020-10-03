@@ -1,9 +1,12 @@
+#define _GNU_SOURCE
+
 #include <sched.h>
 #include <stdio.h>
 
 #include "fcfs.h"
 #include "srtn.h"
 #include "round_robin.h"
+
 
 /* Função que fica trabalhando na CPU, representando um processo
  * do escalonador.

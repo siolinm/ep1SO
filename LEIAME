@@ -1,1 +1,19 @@
-Oh Paiolla senpai!! Please readme out loud Paiolla senpai! Yeah, just like that Paiolla senpai!
+Para compilar os binários basta rodar: 
+    make
+
+Como a primeira regra de compilação é default, rodar make é o mesmo que rodar make default que rodará as regras de compilação bccsh e ep1.
+
+Para compilar especificamente ep1:
+    make ep1
+
+Para compilar especificamente bccsh:
+    make bccsh
+
+Para executar bccsh:
+    ./bccsh
+
+Para executar ep1:
+    ./ep1 <num-escalonador> <arquivo-entrada> <arquivo-saida> (d)
+onde d é um parâmetro opcional.
+
+OBS: Para invocar o simulador a partir do bccsh os dois binários devem estar na mesma pasta.

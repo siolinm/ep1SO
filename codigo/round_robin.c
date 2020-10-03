@@ -48,7 +48,7 @@ void round_robin() {
                 ellapsed(atual) += quantum;
                 if (ellapsed(atual) >= dt(atual)*SEGUNDO_EM_MICROSSEGUNDOS) {
                     tf(atual) = cur_time; /* tempo final é arredondado para baixo */
-                    print_finalizacao_processo(atual);                    
+                    print_finalizacao_processo(atual);
                 }
                 else todos_terminaram = 0;
             }

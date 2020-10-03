@@ -1,5 +1,6 @@
 \usepackage[utf8]{inputenc}
 \usepackage[brazil]{babel}
+\usepackage{ragged2e}
 
 \usetheme{Warsaw}
 
@@ -30,3 +31,5 @@
 \def\input@path{{./img/}}
 
 \linespread{1.5}
+
+\apptocmd{\frame}{}{\justifying}{}

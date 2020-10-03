@@ -11,10 +11,50 @@
     \maketitle
     \section{Shell}
     \begin{frame}{Arquitetura do Shell}
-    \end{frame}
+      O shell segue a arquitetura sugerida em aula, tendo sido implementado apenas no arquivo \texttt{bccsh.c}. 
+      
+      Conta com um loop principal em que lê um comando por iteração e executa esse comando internamente por meio de chamadas de sistema ou realiza a invocação externa do binário informado até que um sinal \texttt{EOF} seja emitido pelo usuário (pressionar as teclas \texttt{CTRL+D}).
+      % \begin{itemize}
+      %   \item Ao ser executado
+      %   \item Permissões do MKDIR
+      %   \item Tamanho dos arrays em defines
+      %   \item Tudo em um arquivo só
+      %   \item parametros são ponteiros para posições de memória que já estão alocadas em command
+      %   \item por definição paramaters[0] guarda o comando
+      %   \item CTRL+D faz com que readline não devolva memória e o programa fecha
 
+      % \end{itemize}
+    \end{frame}
+    \begin{frame}{Arquitetura do Shell}
+      Além disso algumas decisões de projetos foram tomadas, entre elas:
+      \begin{itemize}
+        \justifying
+        \item A função \texttt{read\_command(command, parameters)} recebe o comando digitado pelo usuário, usando a função \texttt{readline()}, e devolve o comando na variável \texttt{command} e os parâmetros na variável \texttt{parameters}. Por definição, \texttt{parameters[0] = command};
+        \item A função \texttt{readline()} aloca a memória necessária. Guardamos seu retorno no histórico usando \texttt{add\_history()} e tratamos seu retorno substituindo espaços em branco pelo caractere `\textbackslash 0' e mudando os ponteiros de \texttt{parameters} para o começo de cada parâmetro na string.
+      \end{itemize}
+    \end{frame}
+    \begin{frame}{Arquitetura do Shell}
+      \begin{itemize}
+        \justifying
+        \item Todos os arrays que não são alocados por funções externas são alocados estaticamente com valor máximo definido por diretivas \texttt{\#define}:
+        \begin{itemize}
+          \vspace{-0.25in}
+          \item \texttt{CUR\_DIR\_SIZE}: tamanho máximo do nome do diretório;
+          \item \texttt{PROMPT\_SIZE}: tamanho máximo da string exibida no prompt;
+          \item \texttt{MAX\_PARAMETERS}: quantidade máxima de parâmetros.
+        \end{itemize}
+        \item Por fim, implementamos a chamada de sistema \texttt{mkdir} passando como parâmetro a constante \texttt{S\_IRWXU} que dá ao usuário todas as permissões sobre aquele diretório.
+      \end{itemize}
+    \end{frame}
     \section{Escalonadores}
     \subsection{Implementação}
+    \begin{frame}{Implementação dos Escalonadores}
+    Inicialmente, todas as threads que eventualmente chegarão no sistema são carregadas do arquivo de entrada, criadas e ficam bloqueadas até que o escalonador lhes dê a permissão de rodar.
+
+    Para fazer esse gerenciamento das threads, existe um array de mutex (chamado \texttt{mutex}) em que cada mutex está associado a uma thread. Se o mutex está liberado, então a thread pode rodar. Caso contrário, a thread fica bloqueada. Usamos os mutex da biblioteca pthread para fazer esse gerenciamento.
+    % falar de uma CPU só 
+    % falar sobre nmax
+    \end{frame}
     \begin{frame}{Implementação dos Escalonadores}
     \end{frame}
 

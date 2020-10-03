@@ -5,7 +5,7 @@ CFLAGS     = -Wall -g -pedantic -Wno-unused-result
 LIBS_BCCSH = -lreadline
 LIBS_EP1   = -lpthread
 
-default: bccsh ep1 gera_tracer
+default: bccsh ep1
 
 bccsh: $(SOBJS)
 	gcc $(CFLAGS) $(SOBJS) -o bccsh $(LIBS_BCCSH)
@@ -14,7 +14,7 @@ ep1: $(EPOBJS)
 	gcc $(CFLAGS) $(EPOBJS) -o ep1 $(LIBS_EP1)
 
 gera_tracer:
-	gcc gera_tracer.c -o gera_tracer
+	gcc testes/gera_tracer.c -o gera_tracer
 
 %.o: %.c # %.h
 	gcc $(CFLAGS) -c $<
@@ -35,9 +35,9 @@ tar:
 	done
 
 	# (se houverem .h)
-	# for a in *.h; do \
-	# 	cp $$a ../$(DIRNAME)/$$a; \
-	# done
+	for a in *.h; do \
+		cp $$a ../$(DIRNAME)/$$a; \
+	done
 
 	# gera ../$(DIRNAME).tar.gz
 	tar -czvf ../$(DIRNAME).tar.gz ../$(DIRNAME)
