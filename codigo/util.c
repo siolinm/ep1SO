@@ -5,10 +5,10 @@ void setSemaforo(int value) {
 
     if (semaforo != -1){
         // printar cpu(semaforo);
-        if(mode == 'd')
-            fprintf(stderr, "A thread %d parou de executar na CPU %d\n\n", semaforo, cpu(semaforo));
         if (tf(semaforo) == -1)
           pthread_mutex_lock(&mutex[semaforo]);
+        if (mode == 'd')
+            fprintf(stderr, "A thread %d parou de executar na CPU %d\n\n", semaforo, cpu(semaforo));
     }
 
     if (value != -1){

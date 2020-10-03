@@ -64,8 +64,10 @@ void srtn() {
 
         /* 1 segundo se passou */
         cur_time++;
-        ellapsed(atual) += 1;
-        rt(atual) -= 1;
+        if (atual != -1) {
+            ellapsed(atual) += 1;
+            rt(atual) -= 1;
+        }
 
         while (prox < n_processos && cur_time >= t0(prox)) {
             print_chegada_processo(prox);
@@ -74,7 +76,7 @@ void srtn() {
             prox++;
         }
 
-        if (ellapsed(atual) == dt(atual)) {
+        if (atual != -1 && ellapsed(atual) == dt(atual)) {
             tf(atual) = cur_time;
             print_finalizacao_processo(atual);
             /* ini anda e agora ini-1 é o novo primeiro da fila (possivelmente fila[ini-1] é -1) */

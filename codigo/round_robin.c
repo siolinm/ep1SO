@@ -3,12 +3,14 @@
 /* 0,05 s*/
 #define quantum 50000
 #define SEGUNDO_EM_MICROSSEGUNDOS 1000000
+#define min(a, b) (a >= b ? b : a)
 
 /* Round Robin */
 void round_robin() {
     int todos_terminaram = 0;
     int prox = 0;
     int tempo_dormindo = 0; /* quantos microssegundos eu passei dormindo no segundo atual */
+    int minimo;
 
     while (!todos_terminaram) {
         todos_terminaram = 1;
@@ -18,7 +20,7 @@ void round_robin() {
                 if(todos_terminaram){
                     atual--;
                     usleep(SEGUNDO_EM_MICROSSEGUNDOS - tempo_dormindo); /* durmo o que falta para completar 1 segundo */
-                    tempo_dormindo = 0; 
+                    tempo_dormindo = 0;
                     cur_time++;
                 }
                 else{
@@ -28,26 +30,29 @@ void round_robin() {
                 continue;
             }
 
-            if (tf(atual) == -1) {
-                while (cur_time == t0(prox))
-                    print_chegada_processo(prox++);
+            while (cur_time == t0(prox))
+                print_chegada_processo(prox++);
 
+            if (tf(atual) == -1) {
                 setSemaforo(atual);
-                usleep(quantum); /* durmo por quantum */
-                /* quantum microssegundos se passaram, se isso não completou 1 segundo somo quantum a tempo dormindo, 
+                rt(atual) = dt(atual)*SEGUNDO_EM_MICROSSEGUNDOS - ellapsed(atual);
+                minimo = min(quantum, rt(atual));
+                usleep(minimo); /* durmo por quantum */
+                /* quantum microssegundos se passaram, se isso não completou 1 segundo somo quantum a tempo dormindo,
                 senão guardo quantos milisegundos extrapolaram 1 segundo e atualizo a quantidade de segundos atual  */
-                if(SEGUNDO_EM_MICROSSEGUNDOS - (tempo_dormindo + quantum) > 0){
-                    tempo_dormindo += quantum;
+                if (SEGUNDO_EM_MICROSSEGUNDOS - (tempo_dormindo + minimo) > 0) {
+                    tempo_dormindo += minimo;
                 }
-                else{
-                    tempo_dormindo += quantum;
+                else {
+                    tempo_dormindo += minimo;
                     tempo_dormindo -= SEGUNDO_EM_MICROSSEGUNDOS;
                     cur_time++;
                 }
 
-                ellapsed(atual) += quantum;
+                ellapsed(atual) += minimo;
                 if (ellapsed(atual) >= dt(atual)*SEGUNDO_EM_MICROSSEGUNDOS) {
                     tf(atual) = cur_time; /* tempo final é arredondado para baixo */
+                    pthread_join(threads[atual], NULL);
                     print_finalizacao_processo(atual);
                 }
                 else todos_terminaram = 0;

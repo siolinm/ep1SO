@@ -13,16 +13,18 @@ void fcfs() {
             print_chegada_processo(prox++);
 
         dorme();
-
         cur_time++;
-        ellapsed(atual) += 1;
-        if (ellapsed(atual) == dt(atual)) {
-            tf(atual) = cur_time;
-            print_finalizacao_processo(atual);
-            if(atual < n_processos - 1)
-                setSemaforo(++atual);
-            else
-                atual = n_processos;            
+
+        if (t0(atual) >= cur_time) {
+            ellapsed(atual) += 1;
+            if (ellapsed(atual) == dt(atual)) {
+                tf(atual) = cur_time;
+                print_finalizacao_processo(atual);
+                if(atual < n_processos - 1)
+                    setSemaforo(++atual);
+                else
+                    atual = n_processos;
+            }
         }
     }
 }
