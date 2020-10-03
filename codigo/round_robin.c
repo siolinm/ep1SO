@@ -52,7 +52,7 @@ void round_robin() {
                 ellapsed(atual) += minimo;
                 if (ellapsed(atual) >= dt(atual)*SEGUNDO_EM_MICROSSEGUNDOS) {
                     tf(atual) = cur_time; /* tempo final é arredondado para baixo */
-                    pthread_join(threads[atual], NULL);
+                    /*pthread_join(threads[atual], NULL);*/
                     print_finalizacao_processo(atual);
                 }
                 else todos_terminaram = 0;

@@ -1,148 +1,34 @@
-Processo p0 chegou no sistema no instante 0.
-Conteudo do trace: p0 0 14 16
+Processo p0 chegou no sistema no instante 1.
+Conteudo do trace: p0 1 10 21
 
-A thread 0 começou a usar a CPU 1.
+Processo p1 chegou no sistema no instante 1.
+Conteudo do trace: p1 1 7 8
 
-Processo p1 chegou no sistema no instante 2.
-Conteudo do trace: p1 2 6 9
+Processo p2 chegou no sistema no instante 1.
+Conteudo do trace: p2 1 3 11
 
-A thread 0 parou de executar na CPU 1
+A thread 0 começou a usar a CPU 7.
 
-Mudança de contexto (total = 1).
-Da thread 0 para a 1 no instante 2.
+Processo p3 chegou no sistema no instante 4.
+Conteudo do trace: p3 4 9 33
 
-A thread 1 começou a usar a CPU 5.
+Processo p4 chegou no sistema no instante 4.
+Conteudo do trace: p4 4 1 31
 
-Processo p2 chegou no sistema no instante 5.
-Conteudo do trace: p2 5 9 15
+Processo p5 chegou no sistema no instante 5.
+Conteudo do trace: p5 5 20 52
 
-Processo p3 chegou no sistema no instante 6.
-Conteudo do trace: p3 6 1 13
+Processo p6 chegou no sistema no instante 7.
+Conteudo do trace: p6 7 13 60
 
-A thread 1 parou de executar na CPU 5
+Processo p7 chegou no sistema no instante 10.
+Conteudo do trace: p7 10 11 75
 
-Mudança de contexto (total = 2).
-Da thread 1 para a 3 no instante 6.
+Processo p8 chegou no sistema no instante 15.
+Conteudo do trace: p8 15 6 100
 
-A thread 3 começou a usar a CPU 2.
+Processo p9 chegou no sistema no instante 16.
+Conteudo do trace: p9 16 4 73
 
-Processo p3 finalizado no instante 7.
-Conteudo da saída: p3 7 1
-
-A thread 3 parou de executar na CPU 2
-
-Mudança de contexto (total = 3).
-Da thread 3 para a 1 no instante 7.
-
-A thread 1 começou a usar a CPU 5.
-
-Processo p4 chegou no sistema no instante 9.
-Conteudo do trace: p4 9 5 20
-
-Processo p1 finalizado no instante 9.
-Conteudo da saída: p1 9 7
-
-A thread 1 parou de executar na CPU 5
-
-Mudança de contexto (total = 4).
-Da thread 1 para a 4 no instante 9.
-
-A thread 4 começou a usar a CPU 7.
-
-Processo p5 chegou no sistema no instante 12.
-Conteudo do trace: p5 12 8 22
-
-Processo p6 chegou no sistema no instante 14.
-Conteudo do trace: p6 14 9 25
-
-Processo p7 chegou no sistema no instante 14.
-Conteudo do trace: p7 14 1 16
-
-Processo p4 finalizado no instante 14.
-Conteudo da saída: p4 14 5
-
-A thread 4 parou de executar na CPU 7
-
-Mudança de contexto (total = 5).
-Da thread 4 para a 7 no instante 14.
-
-A thread 7 começou a usar a CPU 2.
-
-Processo p7 finalizado no instante 15.
-Conteudo da saída: p7 15 1
-
-A thread 7 parou de executar na CPU 2
-
-Mudança de contexto (total = 6).
-Da thread 7 para a 5 no instante 15.
-
-A thread 5 começou a usar a CPU 4.
-
-Processo p8 chegou no sistema no instante 17.
-Conteudo do trace: p8 17 3 24
-
-A thread 5 parou de executar na CPU 4
-
-Mudança de contexto (total = 7).
-Da thread 5 para a 8 no instante 17.
-
-A thread 8 começou a usar a CPU 6.
-
-Processo p9 chegou no sistema no instante 18.
-Conteudo do trace: p9 18 2 25
-
-Processo p8 finalizado no instante 20.
-Conteudo da saída: p8 20 3
-
-A thread 8 parou de executar na CPU 6
-
-Mudança de contexto (total = 8).
-Da thread 8 para a 9 no instante 20.
-
-A thread 9 começou a usar a CPU 5.
-
-Processo p9 finalizado no instante 22.
-Conteudo da saída: p9 22 4
-
-A thread 9 parou de executar na CPU 5
-
-Mudança de contexto (total = 9).
-Da thread 9 para a 5 no instante 22.
-
-A thread 5 começou a usar a CPU 6.
-
-Processo p5 finalizado no instante 28.
-Conteudo da saída: p5 28 16
-
-A thread 5 parou de executar na CPU 6
-
-Mudança de contexto (total = 10).
-Da thread 5 para a 2 no instante 28.
-
-A thread 2 começou a usar a CPU 2.
-
-Processo p2 finalizado no instante 37.
-Conteudo da saída: p2 37 32
-
-A thread 2 parou de executar na CPU 2
-
-Mudança de contexto (total = 11).
-Da thread 2 para a 6 no instante 37.
-
-A thread 6 começou a usar a CPU 4.
-
-Processo p6 finalizado no instante 46.
-Conteudo da saída: p6 46 32
-
-A thread 6 parou de executar na CPU 4
-
-Mudança de contexto (total = 12).
-Da thread 6 para a 0 no instante 46.
-
-A thread 0 começou a usar a CPU 4.
-
-Processo p0 finalizado no instante 58.
-Conteudo da saída: p0 58 58
-
-A thread 0 parou de executar na CPU 4
+A thread 0 parou de usar a CPU 7 e começou a usar a CPU 3.
 

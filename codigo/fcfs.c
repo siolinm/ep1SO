@@ -15,7 +15,7 @@ void fcfs() {
         dorme();
         cur_time++;
 
-        if (t0(atual) >= cur_time) {
+        if (t0(atual) <= cur_time) {
             ellapsed(atual) += 1;
             if (ellapsed(atual) == dt(atual)) {
                 tf(atual) = cur_time;
@@ -26,5 +26,5 @@ void fcfs() {
                     atual = n_processos;
             }
         }
-    }
+    }    
 }

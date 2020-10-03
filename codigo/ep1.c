@@ -86,6 +86,8 @@ int main(int argc, char * argv[]) {
             return 0;
     }
 
+    setSemaforo(-1);
+
     /* Garantir que todas as threads finalizaram */
     for (int i = 0; i < n_processos; i++)
         pthread_join(threads[i], NULL);

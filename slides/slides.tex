@@ -44,12 +44,10 @@
     Para fazer esse gerenciamento das threads, existe um array de mutex (chamado \texttt{mutex}) em
         que cada mutex está associado a uma thread. Se o mutex está liberado, então a thread pode
         rodar. Caso contrário, a thread fica bloqueada. Usamos os mutex da biblioteca
-        \texttt{pthread} para fazer esse gerenciamento.
+        \texttt{pthread} para fazer esse gerenciamento, juntamente com as funções \texttt{pthread\_lock} e \texttt{pthread\_unlock}.
     \end{frame}
     \begin{frame}{Implementação dos Escalonadores}
-        Além disso, existe uma variável inteira chamada \texttt{semaforo},
-        que possui valor igual à thread que está em execução no momento
-        (decidimos que apenas uma thread executaria por vez).
+        A variável inteira chamada \texttt{semaforo} possui valor igual à thread que está em execução no momento (decidimos que apenas uma thread executaria por vez).
 
         Essa variável é gerenciada pela função \texttt{setSemaforo(value)},
         que recebe o valor da thread que executará e bloqueia a antiga
@@ -65,28 +63,36 @@
         Esses processos ficam em um array chamado \texttt{processos} que possui tamanho
         máximo igual a \texttt{nmax}. Assumimos que o número máximo de processos é
         $1000$, mas deixamos \texttt{nmax} como $1024$ para ter uma folga.
+
+        Todas as variáveis e funções de uso amplo foram colocadas no arquivo
+        \texttt{util.h} e cada escalonador foi implementado em um arquivo próprio.        
     \end{frame}
 
     \begin{frame}{Implementação dos Escalonadores}
-        Todas as variáveis e funções de uso amplo foram colocadas no arquivo
-        \texttt{util.h} e cada escalonador foi implementado em um arquivo próprio.
-
         Por fim, o arquivo \texttt{ep1.c} possui a função \texttt{main} e a função
         \texttt{busy}, que é a função executada por cada uma das threads.
 
         O consumo de CPU realizado por ela advém da função \texttt{sched\_getcpu()},
         que retorna a CPU atual em que a thread está executando. Nos nossos testes,
-        esse uso foi de $100\%$ do núcleo.
-    \end{frame}
+        esse uso foi de $100\%$ do núcleo para os escalonadores \texttt{FCFS} e \texttt{SRTN}. No \texttt{round robin} a ocorrência massiva de preempções dificulta a visualização de qual CPU está sendo usada.
 
+    \end{frame}
+    \begin{frame}{Implementação dos Escalonadores - Tempo}
+        Sobre o tempo da simulação, o próprio escalonador controla o tempo passado 
+        através do uso da função \texttt{usleep(t)} que coloca o escalonador para ``dormir''
+        por (pelo menos) $t$ microssegundos. Quando o escalonador ``acorda'' se passaram pelo
+        menos $t$ microssegundos e assumimos que exatamente $t$ microssegundos se passaram (o erro cometido por \texttt{usleep} é pequeno de acordo com a documentação).
+
+        A variável global \texttt{cur\_time} controla quantos segundos na simulação se passaram.
+        Ela começa com valor igual ao $t_0$ do primeiro processo (avançamos a simulação para o ponto em que o primeiro processo chega).
+    \end{frame}
     \begin{frame}{Implementação dos Escalonadores - FCFS}
         No FCFS, aproveitamos a própria fila de processos carregada na entrada para
         simular a ordem dos processos.
 
-        O próprio escalonador controla o tempo passado de cada thread, então usamos
-        uma variável \texttt{atual} para controlar o índice da thread que está
-        executando no momento e vamos atualizando o tempo que ela ficou executando
-        conforma a simulação avança.
+        Usamos uma variável \texttt{atual} para controlar o índice da thread que 
+        está executando no momento e vamos atualizando o tempo que ela ficou 
+        executando conforma a simulação avança.
 
         Além disso, também mantemos uma variável \texttt{prox} para dizer qual é
         o próximo processo que vai chegar na simulação. Enquando o tempo atual da
@@ -114,7 +120,17 @@
     \end{frame}
 
     \begin{frame}{Implementação dos Escalonadores - Round Robin}
-        No Round Robin,
+        No Round Robin, a fila de processos carregada na entrada é reaproveitada para simular a ordem dos processos.
+
+        As variáveis \texttt{atual} e \texttt{prox} cumprem o mesmo papel que cumpriam nos outros dois escalonadores.
+
+        A variável \texttt{tempo\_dormindo} controla quantos microssegundos além do segundo atual já se passaram.
+
+        O \texttt{quantum} é definido em um \texttt{\#define} e é dado em microssegundos.
+
+        A variável \texttt{minimo} assegura que o escalonador não dormirá por \texttt{quantum} se o tempo para o processo terminar é menor que isso.
+
+        A variável \texttt{todos\_terminaram} controla se todos os processos já encerraram sua execução.
     \end{frame}
 
     \subsection{Experimentos}
