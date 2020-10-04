@@ -80,7 +80,10 @@
           \item \texttt{PROMPT\_SIZE}: tamanho máximo da string exibida no prompt;
           \item \texttt{MAX\_PARAMETERS}: quantidade máxima de parâmetros.
         \end{itemize}
-        \item Por fim, implementamos a chamada de sistema \texttt{mkdir} passando como parâmetro a constante \texttt{S\_IRWXU} que dá ao usuário todas as permissões sobre aquele diretório.
+        \item As syscalls utilizadas para os comandos internos foram \texttt{mkdir}, \texttt{symlink} e \texttt{kill}. Para a execução dos binários utilizamos a chamada \texttt{execve}. 
+        Na chamada de sistema \texttt{mkdir} passamos como parâmetro a 
+        constante \texttt{S\_IRWXU} que dá ao usuário todas as permissões 
+        sobre aquele diretório.
       \end{itemize}
     \end{frame}
     \section{Escalonadores}
@@ -613,7 +616,7 @@
                 pois os algoritmos de escalonamento implementados são
                 determinísticos. Isso é por conta tanto da maneira como controlamos
                 o tempo, como pelo fato de só haver uma thread em execução por vez.
-            \item Esse fato gerou um desvio padrão nulo e, portanto, não existe
+            \item Como o desvio padrão é nulo não existe
                 intervalo de confiança.
         \end{itemize}
     \end{frame}
@@ -622,12 +625,13 @@
         \begin{itemize}
             \justifying
             \item A quantidade de mudanças de contexto do Round-Robin
-                foi muito maior que as do demais, pois o quantum é muito pequeno.
+                foi muito maior que as do demais, como o esperado, pois 
+                o quantum é muito pequeno.
             \item A quantidade de mudanças de contexto do FCFS foi exatamente a
                 esperada, pois elas ocorrem sempre que os processos terminam,
                 exceto quando a fila de espera está vazia.
             \item A quantidade de mudanças de contexto do SRTN foi também dentro
-                do esperado por contadas situações em que um processo
+                do esperado por conta das situações em que um processo
                 chega na fila com tempo de execução menor que o tempo restante
                 do executando.
         \end{itemize}
@@ -655,10 +659,10 @@
             único que prioriza de alguma forma os processos que terminam em
             menos tempo.
 
-        \item Talvez se estivéssemos testando o Round-Robin em um ambiente
-            favorável, poderíamos ver ele cumprindo mais deadlines, mas de fato, o
-            esperado era que o SRTN fosse o melhor nesse quesito devido ao que
-            foi comentado.
+        \item Talvez se estivéssemos testando o Round-Robin ou o FCFS em um ambiente
+            favorável, poderíamos ver eles cumprindo mais deadlines, mas, de fato, o
+            esperado era que o SRTN fosse o melhor nesse quesito pelos motivos
+            comentados.
         \end{itemize}
     \end{frame}
 

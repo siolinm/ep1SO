@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 #define nmax 1024
-#define dorme() usleep(1)
+#define dorme() usleep(1000000)
 
 typedef struct processo {
 	char nome[31];

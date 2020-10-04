@@ -59,16 +59,13 @@ void load(char * nome) {
 
 void save(char * nome) {
     FILE * arquivo;
-    arquivo = fopen(nome, "w");
-    int deadlines = 0;
+    arquivo = fopen(nome, "w");    
 
     if (arquivo == NULL)
         fprintf(stderr, "Falha ao abrir o arquivo de saída.\n");
 
-    for(int i = 0; i < n_processos; i++){
+    for(int i = 0; i < n_processos; i++)
         fprintf(arquivo, "%s %d %d\n", processo[i].nome, tf(i), tf(i) - t0(i));
-        deadlines += (tf(i) > deadline(i));
-    }
 
     fprintf(arquivo, "%d", mc);
 
