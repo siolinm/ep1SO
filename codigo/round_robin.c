@@ -1,7 +1,7 @@
 #include "round_robin.h"
 
 /* 0,05 s*/
-#define quantum 50000
+#define quantum 1000000
 #define SEGUNDO_EM_MICROSSEGUNDOS 1000000
 #define min(a, b) (a >= b ? b : a)
 
@@ -19,7 +19,8 @@ void round_robin() {
             if (t0(atual) > cur_time) {
                 if(todos_terminaram){
                     atual--;
-                    usleep(SEGUNDO_EM_MICROSSEGUNDOS - tempo_dormindo); /* durmo o que falta para completar 1 segundo */
+                    dorme();
+                    /*usleep(SEGUNDO_EM_MICROSSEGUNDOS - tempo_dormindo);  durmo o que falta para completar 1 segundo */
                     tempo_dormindo = 0;
                     cur_time++;
                 }
@@ -37,7 +38,8 @@ void round_robin() {
                 setSemaforo(atual);
                 rt(atual) = dt(atual)*SEGUNDO_EM_MICROSSEGUNDOS - ellapsed(atual);
                 minimo = min(quantum, rt(atual));
-                usleep(minimo); /* durmo por quantum */
+                dorme();
+                /*usleep(minimo);  durmo por quantum */
                 /* quantum microssegundos se passaram, se isso não completou 1 segundo somo quantum a tempo dormindo,
                 senão guardo quantos milisegundos extrapolaram 1 segundo e atualizo a quantidade de segundos atual  */
                 if (SEGUNDO_EM_MICROSSEGUNDOS - (tempo_dormindo + minimo) > 0) {

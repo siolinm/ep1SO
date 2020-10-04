@@ -26,7 +26,7 @@ typedef struct processo {
 #define ellapsed(i) processo[i].ellapsed
 #define entrada_CPU(i) processo[i].tempo_de_entrada_na_CPU
 #define cpu(i) processo[i].cpu
-#define dorme() usleep(1000)
+#define dorme() usleep(1)
 
 Processo processo[nmax];
 pthread_t threads[nmax];

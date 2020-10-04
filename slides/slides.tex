@@ -122,11 +122,10 @@
     \begin{frame}{Implementação dos Escalonadores - Round Robin}
         No Round Robin, a fila de processos carregada na entrada é reaproveitada para simular a ordem dos processos.
 
-        As variáveis \texttt{atual} e \texttt{prox} cumprem o mesmo papel que cumpriam nos outros dois escalonadores.
+        As variáveis \texttt{atual} e \texttt{prox} cumprem o mesmo papel que cumpriam nos outros dois escalonadores,
+        enquanto a variável \texttt{tempo\_dormindo} controla quantos microssegundos além do segundo atual já se passaram.
 
-        A variável \texttt{tempo\_dormindo} controla quantos microssegundos além do segundo atual já se passaram.
-
-        O \texttt{quantum} é definido em um \texttt{\#define} e é dado em microssegundos.
+        O \texttt{quantum} é definido em um \texttt{\#define} e é dado em microssegundos. Testamos para \texttt{quantum = 0.05s}.
 
         A variável \texttt{minimo} assegura que o escalonador não dormirá por \texttt{quantum} se o tempo para o processo terminar é menor que isso.
 
@@ -134,7 +133,7 @@
     \end{frame}
 
     \subsection{Experimentos}
-    \begin{frame}{Arquivo de Trace: 10 processos}
+    \begin{frame}{Arquivo de Trace: 10 processos - Mudanças de contexto}
         \begin{tikzpicture}
               \begin{axis}[
                   width  = 1.00*\textwidth,
@@ -150,6 +149,10 @@
                   ymin=0,
                   legend cell align=left,
                   legend style={at={(0.5,-0.06)},anchor=north},
+                  nodes near coords, 
+                  nodes near coords align={anchor=south},%Move values in bar
+                  totals/.style={nodes near coords align={anchor=north}},
+                  x tick label style={anchor=south,yshift=-0.5cm},
               ]
 
               \addplot[style={fill=red},
@@ -157,7 +160,7 @@
                 y dir=both,
                 y explicit]
               coordinates {
-                  (A, 10) += (0,1) -= (0,1)
+                  (A, 9)
                   (B, 43) += (0,2) -= (0,1)
               };
 
@@ -166,8 +169,8 @@
                 y dir=both,
                 y explicit]
               coordinates {
-                   (A,4.33) += (0,2) -= (0,1)
-                   (B,3.82) += (0,5) -= (0,2)
+                   (A, 11)
+                   (B, 3.82) += (0,5) -= (0,2)
               };
 
               \addplot[style={fill=green},
@@ -175,7 +178,7 @@
                 y dir=both,
                 y explicit]
               coordinates {
-                   (A,8) += (0,2) -= (0,1)
+                   (A,798)
                    (B,7) += (0,5) -= (0,2)
               };
 
@@ -185,7 +188,7 @@
         \end{tikzpicture}
     \end{frame}
 
-    \begin{frame}{Arquivo de Trace: 100 processos}
+    \begin{frame}{Arquivo de Trace: 100 processos - Mudanças de contexto}
         \begin{tikzpicture}
               \begin{axis}[
                   width  = 1.00*\textwidth,
@@ -201,6 +204,10 @@
                   ymin=0,
                   legend cell align=left,
                   legend style={at={(0.5,-0.06)},anchor=north},
+                  nodes near coords, 
+                  nodes near coords align={anchor=south},%Move values in bar
+                  totals/.style={nodes near coords align={anchor=north}},
+                  x tick label style={anchor=south,yshift=-0.5cm},
               ]
 
               \addplot[style={fill=red},
@@ -208,7 +215,7 @@
                 y dir=both,
                 y explicit]
               coordinates {
-                  (A, 10) += (0,1) -= (0,1)
+                  (A, 99)
                   (B, 43) += (0,2) -= (0,1)
               };
 
@@ -217,7 +224,7 @@
                 y dir=both,
                 y explicit]
               coordinates {
-                   (A,4.33) += (0,2) -= (0,1)
+                   (A,113)
                    (B,3.82) += (0,5) -= (0,2)
               };
 
@@ -226,17 +233,69 @@
                 y dir=both,
                 y explicit]
               coordinates {
-                   (A,8) += (0,2) -= (0,1)
+                   (A,17157)
                    (B,7) += (0,5) -= (0,2)
               };
-
 
               \legend{FCFS, SRTN, Round-Robin}
             \end{axis}
         \end{tikzpicture}
     \end{frame}
 
-    \begin{frame}{Arquivo de Trace: 1000 processos}
+    \begin{frame}{Arquivo de Trace: 1000 processos - Mudanças de contexto}
+        \begin{tikzpicture}
+              \begin{axis}[
+                  width  = 1.00*\textwidth,
+                  height = 6.5cm,
+                  major x tick style = transparent,
+                  ybar=2*\pgflinewidth,                  
+                  bar width=25pt,                  
+                  ymajorgrids = true,
+                  symbolic x coords={A,B},
+                  xtick = data,
+                  scaled y ticks = false,
+                  enlarge x limits=0.50,
+                  ymin=0,
+                  legend cell align=left,
+                  legend style={at={(0.5,-0.06)},anchor=north},
+                  nodes near coords, 
+                  nodes near coords align={anchor=south},%Move values in bar
+                  totals/.style={nodes near coords align={anchor=north}},
+                  x tick label style={anchor=south,yshift=-0.5cm},
+              ]
+
+              \addplot[style={fill=red},
+                error bars/.cd,
+                y dir=both,
+                y explicit]
+              coordinates {
+                  (A, 999)
+                  (B, 43) += (0,2) -= (0,1)
+              };
+
+              \addplot[style={fill=blue},
+                error bars/.cd,
+                y dir=both,
+                y explicit]
+              coordinates {
+                   (A,1143)
+                   (B,3.82) += (0,5) -= (0,2)
+              };
+
+              \addplot[style={fill=green},
+                error bars/.cd,
+                y dir=both,
+                y explicit]
+              coordinates {
+                   (A,158657)
+                   (B,7) += (0,5) -= (0,2)
+              };
+
+              \legend{FCFS, SRTN, Round-Robin}
+            \end{axis}
+        \end{tikzpicture}
+    \end{frame}
+    \begin{frame}{Arquivo de Trace: 10 processos - Deadlines}
         \begin{tikzpicture}
               \begin{axis}[
                   width  = 1.00*\textwidth,
@@ -252,6 +311,10 @@
                   ymin=0,
                   legend cell align=left,
                   legend style={at={(0.5,-0.06)},anchor=north},
+                  nodes near coords, 
+                  nodes near coords align={anchor=south},%Move values in bar
+                  totals/.style={nodes near coords align={anchor=north}},
+                  x tick label style={anchor=south,yshift=-0.5cm},
               ]
 
               \addplot[style={fill=red},
@@ -259,7 +322,7 @@
                 y dir=both,
                 y explicit]
               coordinates {
-                  (A, 10) += (0,1) -= (0,1)
+                  (A, 5)
                   (B, 43) += (0,2) -= (0,1)
               };
 
@@ -268,8 +331,8 @@
                 y dir=both,
                 y explicit]
               coordinates {
-                   (A,4.33) += (0,2) -= (0,1)
-                   (B,3.82) += (0,5) -= (0,2)
+                   (A, 0)
+                   (B, 3.82) += (0,5) -= (0,2)
               };
 
               \addplot[style={fill=green},
@@ -277,7 +340,7 @@
                 y dir=both,
                 y explicit]
               coordinates {
-                   (A,8) += (0,2) -= (0,1)
+                   (A,4)
                    (B,7) += (0,5) -= (0,2)
               };
 
@@ -287,6 +350,115 @@
         \end{tikzpicture}
     \end{frame}
 
+    \begin{frame}{Arquivo de Trace: 100 processos - Deadlines}
+        \begin{tikzpicture}
+              \begin{axis}[
+                  width  = 1.00*\textwidth,
+                  height = 6.5cm,
+                  major x tick style = transparent,
+                  ybar=2*\pgflinewidth,
+                  bar width=25pt,
+                  ymajorgrids = true,
+                  symbolic x coords={A,B},
+                  xtick = data,
+                  scaled y ticks = false,
+                  enlarge x limits=0.50,
+                  ymin=0,
+                  legend cell align=left,
+                  legend style={at={(0.5,-0.06)},anchor=north},
+                  nodes near coords, 
+                  nodes near coords align={anchor=south},%Move values in bar
+                  totals/.style={nodes near coords align={anchor=north}},
+                  x tick label style={anchor=south,yshift=-0.5cm},
+              ]
+
+              \addplot[style={fill=red},
+                error bars/.cd,
+                y dir=both,
+                y explicit]
+              coordinates {
+                  (A, 91)
+                  (B, 43) += (0,2) -= (0,1)
+              };
+
+              \addplot[style={fill=blue},
+                error bars/.cd,
+                y dir=both,
+                y explicit]
+              coordinates {
+                   (A,39)
+                   (B,3.82) += (0,5) -= (0,2)
+              };
+
+              \addplot[style={fill=green},
+                error bars/.cd,
+                y dir=both,
+                y explicit]
+              coordinates {
+                   (A,96)
+                   (B,7) += (0,5) -= (0,2)
+              };
+
+
+              \legend{FCFS, SRTN, Round-Robin}
+            \end{axis}
+        \end{tikzpicture}
+    \end{frame}
+
+    \begin{frame}{Arquivo de Trace: 1000 processos - Deadlines}
+        \begin{tikzpicture}
+              \begin{axis}[
+                  width  = 1.00*\textwidth,
+                  height = 6.5cm,
+                  major x tick style = transparent,
+                  ybar=2*\pgflinewidth,
+                  bar width=25pt,
+                  ymajorgrids = true,
+                  symbolic x coords={A,B},
+                  xtick = data,
+                  scaled y ticks = false,
+                  enlarge x limits=0.50,
+                  ymin=0,
+                  legend cell align=left,
+                  legend style={at={(0.5,-0.06)},anchor=north},
+                  nodes near coords, 
+                  nodes near coords align={anchor=south},%Move values in bar
+                  totals/.style={nodes near coords align={anchor=north}},
+                  x tick label style={anchor=south,yshift=-0.5cm},
+              ]
+
+              \addplot[style={fill=red},
+                error bars/.cd,
+                y dir=both,
+                y explicit]
+              coordinates {
+                  (A, 994)
+                  (B, 43) += (0,2) -= (0,1)
+              };
+
+              \addplot[style={fill=blue},
+                error bars/.cd,
+                y dir=both,
+                y explicit]
+              coordinates {
+                   (A,427)
+                   (B,3.82) += (0,5) -= (0,2)
+              };
+
+              \addplot[style={fill=green},
+                error bars/.cd,
+                y dir=both,
+                y explicit]
+              coordinates {
+                   (A,998)
+                   (B,7) += (0,5) -= (0,2)
+              };
+
+
+              \legend{FCFS, SRTN, Round-Robin}
+            \end{axis}
+        \end{tikzpicture}
+    \end{frame}
     \begin{frame}{Conclusões dos experimentos}
         \begin{enumerate}
         \end{enumerate}
