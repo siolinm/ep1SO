@@ -4,7 +4,7 @@
 \title{Exercício Programa 1}
 \subtitle{Escalonador de processos}
 \institute{IME-USP}
-\author{Lucas Paiolla Forastiere e Marcos Siolin Martins}
+\author{Lucas Paiolla Forastiere, 11221911\\ Marcos Siolin Martins, 11221709}
 \date{05 de outubro de 2020}
 
 \begin{document}
@@ -19,16 +19,60 @@
       Além disso algumas decisões de projetos foram tomadas, entre elas:
       \begin{itemize}
         \justifying
-        \item A função \texttt{read\_command(command, parameters)} recebe o comando digitado pelo usuário, usando a função \texttt{readline()}, e devolve o comando na variável \texttt{command} e os parâmetros na variável \texttt{parameters}. Por definição, \texttt{parameters[0] = command};
+        \item A função \texttt{read\_command(command, parameters)} recebe a entrada digitada pelo usuário, usando a função \texttt{readline()}, e devolve o comando na variável \texttt{command} e cada parâmetro no vetor \texttt{parameters}. Por definição, \texttt{parameters[0] = command};
         \item A função \texttt{readline()} aloca a memória necessária. Guardamos seu retorno no histórico usando \texttt{add\_history()} e tratamos seu retorno substituindo espaços em branco pelo caractere `\textbackslash 0' e mudando os ponteiros de \texttt{parameters} para o começo de cada parâmetro na string.
       \end{itemize}
+    \end{frame}
+    \begin{frame}{Arquitetura do Shell}
+      Antes do tratamento:
+      \begin{figure}
+        \begin{tikzpicture}
+          \node at (-1,1) (command) {\texttt{command}};
+          \node at (0,0) [square,draw,minimum size=0.75cm] (0) {l};
+          \node at (0.75,0) [square,draw,minimum size=0.75cm] (1) {n};
+          \node at (1.5,0) [square,draw,minimum size=0.75cm] (2) {};
+          \node at (2.25,0) [square,draw,minimum size=0.75cm] (3) {-};
+          \node at (3,0) [square,draw,minimum size=0.75cm] (4) {s};
+          \node at (3.75,0) [square,draw,minimum size=0.75cm] (5) {};
+          \node at (4.5,0) [square,draw,minimum size=0.75cm] (6) {a};
+          \node at (5.25,0) [square,draw,minimum size=0.75cm] (7) {};
+          \node at (6,0) [square,draw,minimum size=0.75cm] (8) {b};
+          \node at (6.75,0) [square,draw,minimum size=0.75cm] (9) {\textbackslash 0};
+          \draw[->] (command) edge[out=270,in=180] (0);
+        \end{tikzpicture}
+      \end{figure}
+      Depois do tratamento:
+      \begin{figure}
+        \begin{tikzpicture}
+          \node at (-1,1) (command) {\texttt{command}};
+          \node at (-1,-1) (p0) {\texttt{parameters[0]}};
+          \node at (2,1) (p1) {\texttt{parameters[1]}};
+          \node at (3,-1) (p2) {\texttt{parameters[2]}};
+          \node at (5,1) (p3) {\texttt{parameters[3]}};
+          \node at (0,0) [square,draw,minimum size=0.75cm] (0) {l};
+          \node at (0.75,0) [square,draw,minimum size=0.75cm] (1) {n};
+          \node at (1.5,0) [square,draw,minimum size=0.75cm] (2) {\textbackslash 0};
+          \node at (2.25,0) [square,draw,minimum size=0.75cm] (3) {-};
+          \node at (3,0) [square,draw,minimum size=0.75cm] (4) {s};
+          \node at (3.75,0) [square,draw,minimum size=0.75cm] (5) {\textbackslash 0};
+          \node at (4.5,0) [square,draw,minimum size=0.75cm] (6) {a};
+          \node at (5.25,0) [square,draw,minimum size=0.75cm] (7) {\textbackslash 0};
+          \node at (6,0) [square,draw,minimum size=0.75cm] (8) {b};
+          \node at (6.75,0) [square,draw,minimum size=0.75cm] (9) {\textbackslash 0};
+          \draw[->] (command) edge[out=270,in=180] (0);
+          \draw[->] (p0) edge[out=90,in=200] (0);
+          \draw[->] (p1) edge[out=270,in=90] (3);
+          \draw[->] (p2) edge[out=90,in=270] (6);
+          \draw[->] (p3) edge[out=270,in=90] (8);
+        \end{tikzpicture}
+      \end{figure}
     \end{frame}
     \begin{frame}{Arquitetura do Shell}
       \begin{itemize}
         \justifying
         \item Todos os arrays que não são alocados por funções externas são alocados estaticamente com valor máximo definido por diretivas \texttt{\#define}:
         \begin{itemize}
-          % \vspace{-0.25in}
+          \vspace{-0.25in}
           \item \texttt{CUR\_DIR\_SIZE}: tamanho máximo do nome do diretório;
           \item \texttt{PROMPT\_SIZE}: tamanho máximo da string exibida no prompt;
           \item \texttt{MAX\_PARAMETERS}: quantidade máxima de parâmetros.
@@ -131,6 +175,35 @@
 
         A variável \texttt{todos\_terminaram} controla se todos os processos já encerraram sua execução.
     \end{frame}
+    \begin{frame}{Implementação dos escalonadores - Round Robin}
+    Na nossa implementação de Round Robin a fila circula nos processos que já chegaram e caso um novo processo chegue é colocado após o processo que chegou anteriormente. Exemplo:
+    \begin{figure}
+      \begin{tikzpicture}
+        \node at (0,0) [circle,draw, minimum size = 1cm] (0) {\texttt{p0}};
+        \node at (2,0) [circle,draw, minimum size = 1cm] (1) {\texttt{p1}};
+        \node at (4,0) [circle,draw, minimum size = 1cm] (2) {\texttt{p2}};
+        \node at (1,-1) (at) {\texttt{atual}};
+        \draw[->] (at) edge[out=0,in=270] (1);
+        \draw[->] (0) -- (1);
+        \draw[->] (1) -- (2);
+        \draw[->] (2) edge[out = 150,in=30] (0);
+      \end{tikzpicture}
+    \end{figure}
+    \begin{figure}
+      \begin{tikzpicture}
+        \node at (0,0) [circle,draw, minimum size = 1cm] (0) {\texttt{p0}};
+        \node at (2,0) [circle,draw, minimum size = 1cm] (1) {\texttt{p1}};
+        \node at (4,0) [circle,draw, minimum size = 1cm] (2) {\texttt{p2}};
+        \node at (6,0) [circle,draw, minimum size = 1cm] (3) {\texttt{p3}};
+        \node at (1,-1) (at) {\texttt{atual}};
+        \draw[->] (at) edge[out=0,in=270] (1);
+        \draw[->] (0) -- (1);
+        \draw[->] (1) -- (2);
+        \draw[->] (2) -- (3);
+        \draw[->] (3) edge[out = 150,in=30] (0);
+      \end{tikzpicture}
+    \end{figure}    
+    \end{frame}
 
     \subsection{Experimentos}
     \begin{frame}{Arquivo de Trace: 10 processos - Mudanças de contexto}
@@ -139,6 +212,8 @@
                   width  = 1.00*\textwidth,
                   height = 6.5cm,
                   major x tick style = transparent,
+                  ylabel={Mudanças de contexto},
+                  ylabel style={yshift=0.4cm},
                   ybar=2*\pgflinewidth,
                   bar width=25pt,
                   ymajorgrids = true,
@@ -194,6 +269,8 @@
                   width  = 1.00*\textwidth,
                   height = 6.5cm,
                   major x tick style = transparent,
+                  ylabel={Mudanças de contexto},
+                  ylabel style={yshift=0.4cm},
                   ybar=2*\pgflinewidth,
                   bar width=25pt,
                   ymajorgrids = true,
@@ -248,6 +325,8 @@
                   width  = 1.00*\textwidth,
                   height = 6.5cm,
                   major x tick style = transparent,
+                  ylabel={Mudanças de contexto},
+                  ylabel style={yshift=0.4cm},
                   ybar=2*\pgflinewidth,                  
                   bar width=25pt,                  
                   ymajorgrids = true,
@@ -301,6 +380,8 @@
                   width  = 1.00*\textwidth,
                   height = 6.5cm,
                   major x tick style = transparent,
+                  ylabel={Deadlines não cumpridas},
+                  ylabel style={yshift=0.4cm},
                   ybar=2*\pgflinewidth,
                   bar width=25pt,
                   ymajorgrids = true,
@@ -356,6 +437,8 @@
                   width  = 1.00*\textwidth,
                   height = 6.5cm,
                   major x tick style = transparent,
+                  ylabel={Deadlines não cumpridas},
+                  ylabel style={yshift=0.4cm},
                   ybar=2*\pgflinewidth,
                   bar width=25pt,
                   ymajorgrids = true,
@@ -411,6 +494,8 @@
                   width  = 1.00*\textwidth,
                   height = 6.5cm,
                   major x tick style = transparent,
+                  ylabel={Deadlines não cumpridas},
+                  ylabel style={yshift=0.4cm},
                   ybar=2*\pgflinewidth,
                   bar width=25pt,
                   ymajorgrids = true,
