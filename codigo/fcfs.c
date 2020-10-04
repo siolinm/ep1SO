@@ -20,11 +20,11 @@ void fcfs() {
             if (ellapsed(atual) == dt(atual)) {
                 tf(atual) = cur_time;
                 print_finalizacao_processo(atual);
-                if(atual < n_processos - 1)
+                if (atual < n_processos - 1)
                     setSemaforo(++atual);
                 else
                     atual = n_processos;
             }
         }
-    }    
+    }
 }

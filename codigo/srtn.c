@@ -54,6 +54,7 @@ void srtn() {
         prox++;
     }
 
+    /* Agora o loop principal */
     while (ini <= n_processos) {
 
         /* atualiza quem deve rodar (se houve alguma alteração) */

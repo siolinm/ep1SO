@@ -8,8 +8,7 @@
 #include "round_robin.h"
 
 
-/* Função que fica trabalhando na CPU, representando um processo
- * do escalonador.
+/** Função que fica trabalhando na CPU, representando um processo do escalonador.
  */
 void * busy(void * argv) {
     int PID = ((int *) argv)[0];
@@ -19,13 +18,14 @@ void * busy(void * argv) {
     while (tf(PID) == -1) {
         pthread_mutex_lock(&mutex[PID]);
         cpu = sched_getcpu();
-        if(entrei == 1 && mode == 'd'){
+        if (entrei == 1 && mode == 'd') {
             fprintf(stderr, "A thread %d começou a usar a CPU %d.\n\n", PID, cpu);
             cpu(PID) = cpu;
             entrei = 0;
         }
-        else if (cpu != cpu(PID) && mode == 'd'){
-            fprintf(stderr, "A thread %d parou de usar a CPU %d e começou a usar a CPU %d.\n\n", PID, cpu(PID), cpu);
+        else if (cpu != cpu(PID) && mode == 'd') {
+            fprintf(stderr, "A thread %d parou de usar a CPU %d e começou a usar a CPU %d.\n\n",
+                    PID, cpu(PID), cpu);
             cpu(PID) = cpu;
         }
         pthread_mutex_unlock(&mutex[PID]);
@@ -43,13 +43,13 @@ int main(int argc, char * argv[]) {
         return 0;
     }
 
-    /* Lendo os argumentos: */
+    /*** Lendo os argumentos: ***/
     escalonador = atoi(argv[1]); /* O número do escalonador */
 
     load(argv[2]);
 
     mode = 'a'; /* Inicialmente supomos que não é o modo de display */
-    if(argc > 4) mode = argv[4][0];
+    if (argc > 4) mode = argv[4][0];
 
     mc = 0; /* Inicializar mudanças de contexto com zero */
 
@@ -70,7 +70,7 @@ int main(int argc, char * argv[]) {
     cur_time = t0(0);
     entrei = 1;
 
-    /* Escalonador entra aqui */
+    /* Escalonador começa aqui */
     switch (escalonador) {
         case 1:
             fcfs();
@@ -86,7 +86,7 @@ int main(int argc, char * argv[]) {
             return 0;
     }
 
-    setSemaforo(-1);
+    setSemaforo(-1); /* No final da simulação, não há nenhuma thread executando */
 
     /* Garantir que todas as threads finalizaram */
     for (int i = 0; i < n_processos; i++)

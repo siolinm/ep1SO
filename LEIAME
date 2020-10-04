@@ -1,7 +1,17 @@
-Para compilar os binários basta rodar: 
+Esse é o projeto para o Exercício-Projeto 1 de MAC0422 - Sistemas Operacionais do IME-USP,
+ministrada pelo Prof. Dr. Daniel Macêdo Batista. Ele foi realizado em dupla pelos alunos
+Lucas Paiolla Forastiere (NUSP: 11221911) e Marcos Siolin Martins (NUSP: 11221709).
+
+O objetivo desse EP era desenvolver um shell para aprender sobre o uso de chamadas de sistemas e
+depois implementar três escalonadores e simulá-los utilizando a biblioteca pthread. Além disso, o
+estudo do uso de semáforos e mutex foi colocado em prática para fazer o controle das threads pelos
+escalonadores.
+
+Para compilar os binários basta rodar:
     make
 
-Como a primeira regra de compilação é default, rodar make é o mesmo que rodar make default que rodará as regras de compilação bccsh e ep1.
+Como a primeira regra de compilação é default, rodar make é o mesmo que rodar make default, que
+rodará as regras de compilação bccsh e ep1.
 
 Para compilar especificamente ep1:
     make ep1

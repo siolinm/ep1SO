@@ -1,7 +1,7 @@
 #include "round_robin.h"
 
 /* 0,05 s*/
-#define quantum 1000000
+#define quantum 50000
 #define SEGUNDO_EM_MICROSSEGUNDOS 1000000
 #define min(a, b) (a >= b ? b : a)
 
@@ -17,14 +17,13 @@ void round_robin() {
         for (int atual = 0; atual < n_processos; atual++) {
 
             if (t0(atual) > cur_time) {
-                if(todos_terminaram){
+                if (todos_terminaram) {
                     atual--;
-                    dorme();
-                    /*usleep(SEGUNDO_EM_MICROSSEGUNDOS - tempo_dormindo);  durmo o que falta para completar 1 segundo */
+                    /* durmo o que falta para completar 1 segundo */
+                    usleep(SEGUNDO_EM_MICROSSEGUNDOS - tempo_dormindo);
                     tempo_dormindo = 0;
                     cur_time++;
-                }
-                else{
+                } else {
                     todos_terminaram = 1;
                     atual = -1;
                 }
@@ -38,14 +37,13 @@ void round_robin() {
                 setSemaforo(atual);
                 rt(atual) = dt(atual)*SEGUNDO_EM_MICROSSEGUNDOS - ellapsed(atual);
                 minimo = min(quantum, rt(atual));
-                dorme();
-                /*usleep(minimo);  durmo por quantum */
-                /* quantum microssegundos se passaram, se isso não completou 1 segundo somo quantum a tempo dormindo,
-                senão guardo quantos milisegundos extrapolaram 1 segundo e atualizo a quantidade de segundos atual  */
+                usleep(minimo);  /* durmo por minimo */
+                /* minimo microssegundos se passaram, se isso não completou 1 segundo somo minimo
+                 * a tempo dormindo, senão guardo quantos microssegundos extrapolaram 1 segundo e
+                 * atualizo a quantidade de segundos atual  */
                 if (SEGUNDO_EM_MICROSSEGUNDOS - (tempo_dormindo + minimo) > 0) {
                     tempo_dormindo += minimo;
-                }
-                else {
+                } else {
                     tempo_dormindo += minimo;
                     tempo_dormindo -= SEGUNDO_EM_MICROSSEGUNDOS;
                     cur_time++;
@@ -54,10 +52,8 @@ void round_robin() {
                 ellapsed(atual) += minimo;
                 if (ellapsed(atual) >= dt(atual)*SEGUNDO_EM_MICROSSEGUNDOS) {
                     tf(atual) = cur_time; /* tempo final é arredondado para baixo */
-                    /*pthread_join(threads[atual], NULL);*/
                     print_finalizacao_processo(atual);
-                }
-                else todos_terminaram = 0;
+                } else todos_terminaram = 0;
             }
         }
     }

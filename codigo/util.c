@@ -1,10 +1,9 @@
 #include "util.h"
 
 void setSemaforo(int value) {
-    if(semaforo == value) return;
+    if (semaforo == value) return;
 
     if (semaforo != -1){
-        // printar cpu(semaforo);
         if (tf(semaforo) == -1)
           pthread_mutex_lock(&mutex[semaforo]);
         if (mode == 'd')
@@ -36,7 +35,7 @@ void load(char * nome) {
     FILE * arquivo;
 
     arquivo = fopen(nome, "r");
-    if(arquivo == NULL) /* erro ao abrir arquivo */
+    if (arquivo == NULL) /* erro ao abrir arquivo */
         return;
 
     n_processos = 0;
@@ -72,9 +71,6 @@ void save(char * nome) {
     }
 
     fprintf(arquivo, "%d", mc);
-
-    /* tirar depois */
-    fprintf(arquivo, "\n%d\n", deadlines);
 
     fclose(arquivo);
 }

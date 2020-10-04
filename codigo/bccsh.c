@@ -16,7 +16,7 @@
 #define PROMPT_SIZE 500
 #define MAX_PARAMETERS 5
 
-/* variáveis (globais?) usuário e diretório atual ==== */
+/* variáveis usuário e diretório atual ==== */
 char cur_dir[CUR_DIR_SIZE];
 char *cur_user;
 
@@ -36,10 +36,11 @@ void read_command(char **command, char **parameters){
     *command = readline(prompt_line);
     add_history(*command);
 
-    /* retornando o comando e os parâmetros, reaproveitando a memória que já foi alocada por readline */
+    /* retornando o comando e os parâmetros, reaproveitando a memória que já foi alocada por
+     * readline */
     int i = 0;
 
-    if(*command != NULL){
+    if (*command != NULL){
         while((*command)[i] != ' ' && (*command)[i] != '\0') { i++; }
 
         for(int j = 0; j < 20; parameters[j] = NULL, j++);
@@ -69,27 +70,23 @@ int main(int argc, char const *argv[]) {
         read_command(&command, parameters);
 
         /* if para syscalls */
-        if(command == NULL){
-            printf("\n");            
+        if (command == NULL) {
+            printf("\n");
             exit(0);
-        }
-        else if(!strcmp(command, "mkdir")){
+        } else if (!strcmp(command, "mkdir")) {
            mkdir(parameters[1], S_IRWXU);
-        }
-        else if(!strcmp(command, "kill")){
+        } else if (!strcmp(command, "kill")) {
             /* tratar o comando e pegar os parâmetros e PID */
             pid_t pid = atoi(parameters[2]);
             kill(pid, -atoi(parameters[1]));
         }
-        else if(!strcmp(command, "ln") && !strcmp(parameters[1], "-s")){
+        else if (!strcmp(command, "ln") && !strcmp(parameters[1], "-s")) {
             symlink(parameters[2], parameters[3]);
-        }
-        else{
-            if(fork() != 0){
+        } else {
+            if (fork() != 0){
                 /* código do processo pai */
                 waitpid(-1, &status, 0);
-            }
-            else{
+            } else {
                 /* código do processo filho */
                 execve(command, parameters, NULL);
                 exit(0);

@@ -11,9 +11,12 @@
     \maketitle
     \section{Shell}
     \begin{frame}{Arquitetura do Shell}
-      O shell segue a arquitetura sugerida em aula, tendo sido implementado apenas no arquivo \texttt{bccsh.c}.
+        \begin{itemize}
+            \justifying
+            \item O shell segue a arquitetura sugerida em aula, tendo sido implementado apenas no arquivo \texttt{bccsh.c}.
 
-      Conta com um loop principal em que lê um comando por iteração e executa esse comando internamente por meio de chamadas de sistema ou realiza a invocação externa do binário informado até que um sinal \texttt{EOF} seja emitido pelo usuário (pressionar as teclas \texttt{CTRL+D}).
+            \item Conta com um loop principal em que lê um comando por iteração e executa esse comando internamente por meio de chamadas de sistema ou realiza a invocação externa do binário informado até que um sinal \texttt{EOF} seja emitido pelo usuário (pressionar as teclas \texttt{CTRL+D}).
+        \end{itemize}
     \end{frame}
     \begin{frame}{Arquitetura do Shell}
       Além disso algumas decisões de projetos foram tomadas, entre elas:
@@ -39,97 +42,121 @@
     \section{Escalonadores}
     \subsection{Implementação}
     \begin{frame}{Implementação dos Escalonadores}
-    Inicialmente, todas as threads que eventualmente chegarão no sistema são carregadas do arquivo de entrada, criadas e ficam bloqueadas até que o escalonador lhes dê a permissão de rodar.
+        \begin{itemize}
+            \justifying
+            \item Inicialmente, todas as threads que eventualmente chegarão no sistema são carregadas do arquivo de entrada, criadas e ficam bloqueadas até que o escalonador lhes dê a permissão de rodar.
 
-    Para fazer esse gerenciamento das threads, existe um array de mutex (chamado \texttt{mutex}) em
+            \item Para fazer esse gerenciamento das threads, existe um array de mutex (chamado \texttt{mutex}) em
         que cada mutex está associado a uma thread. Se o mutex está liberado, então a thread pode
-        rodar. Caso contrário, a thread fica bloqueada. Usamos os mutex da biblioteca
+        rodar. Caso contrário, a thread fica bloqueada.
+
+            \item Usamos os mutex da biblioteca
         \texttt{pthread} para fazer esse gerenciamento, juntamente com as funções \texttt{pthread\_lock} e \texttt{pthread\_unlock}.
+        \end{itemize}
     \end{frame}
     \begin{frame}{Implementação dos Escalonadores}
-        A variável inteira chamada \texttt{semaforo} possui valor igual à thread que está em execução no momento (decidimos que apenas uma thread executaria por vez).
+        \begin{itemize}
+            \justifying
+            \item A variável inteira chamada \texttt{semaforo} possui valor igual à thread que está em execução no momento (decidimos que apenas uma thread executaria por vez).
 
-        Essa variável é gerenciada pela função \texttt{setSemaforo(value)},
+            \item Essa variável é gerenciada pela função \texttt{setSemaforo(value)},
         que recebe o valor da thread que executará e bloqueia a antiga
         thread para liberar a nova (caso o valor passado seja -1,
         então isso indica que nenhuma thread está em execução no momento).
+        \end{itemize}
     \end{frame}
 
     \begin{frame}{Implementação dos Escalonadores}
-        Decidimos também criar uma \texttt{struct} para os processos, para
+        \begin{itemize}
+            \justifying
+            \item Decidimos também criar uma \texttt{struct} para os processos, para
         armazenar algumas informações de cada processo. Como o tempo em que ela terminou
         de executar e as propriedades informadas no arquivo de trace.
 
-        Esses processos ficam em um array chamado \texttt{processos} que possui tamanho
+            \item Esses processos ficam em um array chamado \texttt{processos} que possui tamanho
         máximo igual a \texttt{nmax}. Assumimos que o número máximo de processos é
         $1000$, mas deixamos \texttt{nmax} como $1024$ para ter uma folga.
 
-        Todas as variáveis e funções de uso amplo foram colocadas no arquivo
-        \texttt{util.h} e cada escalonador foi implementado em um arquivo próprio.        
+            \item Todas as variáveis e funções de uso amplo foram colocadas no arquivo
+        \texttt{util.h} e cada escalonador foi implementado em um arquivo próprio.
+        \end{itemize}
     \end{frame}
 
     \begin{frame}{Implementação dos Escalonadores}
-        Por fim, o arquivo \texttt{ep1.c} possui a função \texttt{main} e a função
+        \begin{itemize}
+                \justifying
+                \item Por fim, o arquivo \texttt{ep1.c} possui a função \texttt{main} e a função
         \texttt{busy}, que é a função executada por cada uma das threads.
 
-        O consumo de CPU realizado por ela advém da função \texttt{sched\_getcpu()},
+        \item O consumo de CPU realizado por ela advém da função \texttt{sched\_getcpu()},
         que retorna a CPU atual em que a thread está executando. Nos nossos testes,
-        esse uso foi de $100\%$ do núcleo para os escalonadores \texttt{FCFS} e \texttt{SRTN}. No \texttt{round robin} a ocorrência massiva de preempções dificulta a visualização de qual CPU está sendo usada.
-
+        esse uso foi de $100\%$ do núcleo para os escalonadores \texttt{FCFS} e \texttt{SRTN}. Já no \texttt{round robin} a ocorrência massiva de preempções dificulta a visualização de qual CPU está sendo usada.
+        \end{itemize}
     \end{frame}
     \begin{frame}{Implementação dos Escalonadores - Tempo}
-        Sobre o tempo da simulação, o próprio escalonador controla o tempo passado 
+        \begin{itemize}
+            \justifying
+            \item Sobre o tempo da simulação, o próprio escalonador controla o tempo passado
         através do uso da função \texttt{usleep(t)} que coloca o escalonador para ``dormir''
         por (pelo menos) $t$ microssegundos. Quando o escalonador ``acorda'' se passaram pelo
         menos $t$ microssegundos e assumimos que exatamente $t$ microssegundos se passaram (o erro cometido por \texttt{usleep} é pequeno de acordo com a documentação).
 
-        A variável global \texttt{cur\_time} controla quantos segundos na simulação se passaram.
+            \item A variável global \texttt{cur\_time} controla quantos segundos na simulação se passaram.
         Ela começa com valor igual ao $t_0$ do primeiro processo (avançamos a simulação para o ponto em que o primeiro processo chega).
+        \end{itemize}
     \end{frame}
     \begin{frame}{Implementação dos Escalonadores - FCFS}
-        No FCFS, aproveitamos a própria fila de processos carregada na entrada para
+        \begin{itemize}
+            \justifying
+            \item No FCFS, aproveitamos a própria fila de processos carregada na entrada para
         simular a ordem dos processos.
 
-        Usamos uma variável \texttt{atual} para controlar o índice da thread que 
-        está executando no momento e vamos atualizando o tempo que ela ficou 
+        \item Usamos uma variável \texttt{atual} para controlar o índice da thread que
+        está executando no momento e vamos atualizando o tempo que ela ficou
         executando conforma a simulação avança.
 
-        Além disso, também mantemos uma variável \texttt{prox} para dizer qual é
+        \item Além disso, também mantemos uma variável \texttt{prox} para dizer qual é
         o próximo processo que vai chegar na simulação. Enquando o tempo atual da
         simulação é igual ao $t_0$ de \texttt{prox} indicamos a chegada dele e
         incrementamos a variável.
-
+        \end{itemize}
     \end{frame}
 
     \begin{frame}{Implementação dos Escalonadores - SRTN}
-        No SRTN, usamos um vetor \texttt{fila} que guarda os índices de cada thread.
+        \begin{itemize}
+            \justifying
+            \item No SRTN, usamos um vetor \texttt{fila} que guarda os índices de cada thread.
 
-        A variável \texttt{prox} tem o mesmo papel que no FCFS, assim como
+            \item A variável \texttt{prox} tem o mesmo papel que no FCFS, assim como
         \texttt{atual}.
 
-        A variável \texttt{ini} aponta para o começo da fila e, por definição,
+            \item A variável \texttt{ini} aponta para o começo da fila e, por definição,
         \texttt{fila[ini-1]} é o processo que está executando no momento.
 
-        A variável \texttt{fim} aponta para a última posição não ocupada da fila e,
+            \item A variável \texttt{fim} aponta para a última posição não ocupada da fila e,
         por definição, \texttt{fila[fim]} é sempre igual a -1.
 
-        Além disso, esse escalonador conta com a função \texttt{insere\_na\_fila}, que
+            \item Além disso, esse escalonador conta com a função \texttt{insere\_na\_fila}, que
         insere o processo que acabou de chegar no seu lugar apropriado na fila
         (ordenado pelo tempo restante de execução) e atualiza os valores de
         \texttt{ini} e \texttt{fim}.
+        \end{itemize}
     \end{frame}
 
-    \begin{frame}{Implementação dos Escalonadores - Round Robin}
-        No Round Robin, a fila de processos carregada na entrada é reaproveitada para simular a ordem dos processos.
+    \begin{frame}{Implementação dos Escalonadores - Round-Robin}
+        \begin{itemize}
+            \justifying
+            \item No Round-Robin, a fila de processos carregada na entrada é reaproveitada para simular a ordem dos processos.
 
-        As variáveis \texttt{atual} e \texttt{prox} cumprem o mesmo papel que cumpriam nos outros dois escalonadores,
+            \item As variáveis \texttt{atual} e \texttt{prox} cumprem o mesmo papel que dos outros dois escalonadores,
         enquanto a variável \texttt{tempo\_dormindo} controla quantos microssegundos além do segundo atual já se passaram.
 
-        O \texttt{quantum} é definido em um \texttt{\#define} e é dado em microssegundos. Testamos para \texttt{quantum = 0.05s}.
+            \item O \texttt{quantum} é definido em um \texttt{\#define} e é dado em microssegundos. Testamos para \texttt{quantum = 0.05s}.
 
-        A variável \texttt{minimo} assegura que o escalonador não dormirá por \texttt{quantum} se o tempo para o processo terminar é menor que isso.
+            \item A variável \texttt{minimo} assegura que o escalonador não dormirá por \texttt{quantum} se o tempo para o processo terminar é menor que isso.
 
-        A variável \texttt{todos\_terminaram} controla se todos os processos já encerraram sua execução.
+            \item A variável \texttt{todos\_terminaram} controla se todos os processos já encerraram sua execução.
+        \end{itemize}
     \end{frame}
 
     \subsection{Experimentos}
@@ -149,7 +176,7 @@
                   ymin=0,
                   legend cell align=left,
                   legend style={at={(0.5,-0.06)},anchor=north},
-                  nodes near coords, 
+                  nodes near coords,
                   nodes near coords align={anchor=south},%Move values in bar
                   totals/.style={nodes near coords align={anchor=north}},
                   x tick label style={anchor=south,yshift=-0.5cm},
@@ -161,7 +188,7 @@
                 y explicit]
               coordinates {
                   (A, 9)
-                  (B, 43) += (0,2) -= (0,1)
+                  (B, 9)
               };
 
               \addplot[style={fill=blue},
@@ -170,7 +197,7 @@
                 y explicit]
               coordinates {
                    (A, 11)
-                   (B, 3.82) += (0,5) -= (0,2)
+                   (B, 11)
               };
 
               \addplot[style={fill=green},
@@ -179,7 +206,7 @@
                 y explicit]
               coordinates {
                    (A,798)
-                   (B,7) += (0,5) -= (0,2)
+                   (B,798)
               };
 
 
@@ -204,7 +231,7 @@
                   ymin=0,
                   legend cell align=left,
                   legend style={at={(0.5,-0.06)},anchor=north},
-                  nodes near coords, 
+                  nodes near coords,
                   nodes near coords align={anchor=south},%Move values in bar
                   totals/.style={nodes near coords align={anchor=north}},
                   x tick label style={anchor=south,yshift=-0.5cm},
@@ -216,7 +243,7 @@
                 y explicit]
               coordinates {
                   (A, 99)
-                  (B, 43) += (0,2) -= (0,1)
+                  (B, 99)
               };
 
               \addplot[style={fill=blue},
@@ -225,7 +252,7 @@
                 y explicit]
               coordinates {
                    (A,113)
-                   (B,3.82) += (0,5) -= (0,2)
+                   (B,113)
               };
 
               \addplot[style={fill=green},
@@ -234,7 +261,7 @@
                 y explicit]
               coordinates {
                    (A,17157)
-                   (B,7) += (0,5) -= (0,2)
+                   (B,17157)
               };
 
               \legend{FCFS, SRTN, Round-Robin}
@@ -248,8 +275,8 @@
                   width  = 1.00*\textwidth,
                   height = 6.5cm,
                   major x tick style = transparent,
-                  ybar=2*\pgflinewidth,                  
-                  bar width=25pt,                  
+                  ybar=2*\pgflinewidth,
+                  bar width=25pt,
                   ymajorgrids = true,
                   symbolic x coords={A,B},
                   xtick = data,
@@ -258,7 +285,7 @@
                   ymin=0,
                   legend cell align=left,
                   legend style={at={(0.5,-0.06)},anchor=north},
-                  nodes near coords, 
+                  nodes near coords,
                   nodes near coords align={anchor=south},%Move values in bar
                   totals/.style={nodes near coords align={anchor=north}},
                   x tick label style={anchor=south,yshift=-0.5cm},
@@ -270,7 +297,7 @@
                 y explicit]
               coordinates {
                   (A, 999)
-                  (B, 43) += (0,2) -= (0,1)
+                  (B, 999)
               };
 
               \addplot[style={fill=blue},
@@ -279,7 +306,7 @@
                 y explicit]
               coordinates {
                    (A,1143)
-                   (B,3.82) += (0,5) -= (0,2)
+                   (B,1143)
               };
 
               \addplot[style={fill=green},
@@ -288,7 +315,7 @@
                 y explicit]
               coordinates {
                    (A,158657)
-                   (B,7) += (0,5) -= (0,2)
+                   (B,158657)
               };
 
               \legend{FCFS, SRTN, Round-Robin}
@@ -311,7 +338,7 @@
                   ymin=0,
                   legend cell align=left,
                   legend style={at={(0.5,-0.06)},anchor=north},
-                  nodes near coords, 
+                  nodes near coords,
                   nodes near coords align={anchor=south},%Move values in bar
                   totals/.style={nodes near coords align={anchor=north}},
                   x tick label style={anchor=south,yshift=-0.5cm},
@@ -323,7 +350,7 @@
                 y explicit]
               coordinates {
                   (A, 5)
-                  (B, 43) += (0,2) -= (0,1)
+                  (B, 5)
               };
 
               \addplot[style={fill=blue},
@@ -332,7 +359,7 @@
                 y explicit]
               coordinates {
                    (A, 0)
-                   (B, 3.82) += (0,5) -= (0,2)
+                   (B, 0)
               };
 
               \addplot[style={fill=green},
@@ -341,7 +368,7 @@
                 y explicit]
               coordinates {
                    (A,4)
-                   (B,7) += (0,5) -= (0,2)
+                   (B,4)
               };
 
 
@@ -366,7 +393,7 @@
                   ymin=0,
                   legend cell align=left,
                   legend style={at={(0.5,-0.06)},anchor=north},
-                  nodes near coords, 
+                  nodes near coords,
                   nodes near coords align={anchor=south},%Move values in bar
                   totals/.style={nodes near coords align={anchor=north}},
                   x tick label style={anchor=south,yshift=-0.5cm},
@@ -378,7 +405,7 @@
                 y explicit]
               coordinates {
                   (A, 91)
-                  (B, 43) += (0,2) -= (0,1)
+                  (B, 91)
               };
 
               \addplot[style={fill=blue},
@@ -387,7 +414,7 @@
                 y explicit]
               coordinates {
                    (A,39)
-                   (B,3.82) += (0,5) -= (0,2)
+                   (B,39)
               };
 
               \addplot[style={fill=green},
@@ -396,7 +423,7 @@
                 y explicit]
               coordinates {
                    (A,96)
-                   (B,7) += (0,5) -= (0,2)
+                   (B,96)
               };
 
 
@@ -421,7 +448,7 @@
                   ymin=0,
                   legend cell align=left,
                   legend style={at={(0.5,-0.06)},anchor=north},
-                  nodes near coords, 
+                  nodes near coords,
                   nodes near coords align={anchor=south},%Move values in bar
                   totals/.style={nodes near coords align={anchor=north}},
                   x tick label style={anchor=south,yshift=-0.5cm},
@@ -433,7 +460,7 @@
                 y explicit]
               coordinates {
                   (A, 994)
-                  (B, 43) += (0,2) -= (0,1)
+                  (B, 994)
               };
 
               \addplot[style={fill=blue},
@@ -442,7 +469,7 @@
                 y explicit]
               coordinates {
                    (A,427)
-                   (B,3.82) += (0,5) -= (0,2)
+                   (B,427)
               };
 
               \addplot[style={fill=green},
@@ -451,7 +478,7 @@
                 y explicit]
               coordinates {
                    (A,998)
-                   (B,7) += (0,5) -= (0,2)
+               (B,998)
               };
 
 
@@ -459,9 +486,104 @@
             \end{axis}
         \end{tikzpicture}
     \end{frame}
-    \begin{frame}{Conclusões dos experimentos}
-        \begin{enumerate}
-        \end{enumerate}
+
+    \begin{frame}{Observações antes das conclusões}
+        \begin{itemize}
+            \justifying
+            \item O computador A possuia 8 núcleos e o computador B possuia 4;
+            \item O arquivo de trace utilizado foi gerado sob as seguintes condições:
+                \begin{enumerate}
+                    \item O $t_0$ do primeiro processo é um número de 1 a 10;
+                    \item O $t_0$ de qualquer outro processo é o $t_0$ do processo
+                        anterior mais um número entre 0 e 15;
+                    \item O \texttt{dt} é um valor entre 1 e 21, mas com probabilidade
+                        maior de ser um valor mais baixo;
+                    \item O \texttt{deadline} é a soma do $t_0$ do processo
+                        mais seu \texttt{dt} vezes um número entre 2 e 7.
+                \end{enumerate}
+        \end{itemize}
     \end{frame}
 
+    \begin{frame}{Observações antes das conclusões}
+        \begin{itemize}
+            \justifying
+            \item As threads da biblioteca \texttt{pthread} automaticamente mudam
+                de \textit{core} porque o escalonador do próprio SO produz essas
+                mudanças.
+            \item Nós imprimimos essas mudanças quando a opção \texttt{d} foi
+                explicitada, mas não somamos as mudanças de contexto do SO às
+                mudanças de contexto da nossa simulação.
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Conclusões dos experimentos}
+        \begin{itemize}
+            \justifying
+            \item Os gráficos para os dois computadores foram exatamente os mesmos,
+                pois nossa implementação
+                considerou uma simulação com um núcleo apenas, então a diferença em
+                núcleos dos computadores não afetaria os resultados.
+            \item Além disso, todos os 30 testes com mesmo trace e escalonador
+                geraram os mesmos resultados. Esse comportamento é esperado,
+                pois os algoritmos de escalonamento implementados são
+                determinísticos. Isso é por conta tanto da maneira como controlamos
+                o tempo, como pelo fato de só haver uma thread em execução por vez.
+            \item Esse fato gerou um desvio padrão nulo e, portanto, não existe
+                intervalo de confiança.
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Conclusões dos experimentos - Mudanças de Contexto}
+        \begin{itemize}
+            \justifying
+            \item A quantidade de mudanças de contexto do Round-Robin
+                foi muito maior que as do demais, pois o quantum é muito pequeno.
+            \item A quantidade de mudanças de contexto do FCFS foi exatamente a
+                esperada, pois elas ocorrem sempre que os processos terminam,
+                exceto quando a fila de espera está vazia.
+            \item A quantidade de mudanças de contexto do SRTN foi também dentro
+                do esperado por contadas situações em que um processo
+                chega na fila com tempo de execução menor que o tempo restante
+                do executando.
+        \end{itemize}
+    \end{frame}
+    \begin{frame}{Conclusões dos experimentos - Deadlines}
+        \begin{itemize}
+            \justifying
+            \item O Round-Robin obteve muitas falhas de deadline. Achamos que isso
+                se deve ao fato de que nosso gerador de trace faz com que os
+                processos cheguem na fila com uma constância muito grande (sem
+                intervalos de tempo grandes sem nenhum processo chegando na fila).
+                Assim, o Round-Robin começa a acumular muitos processos na fila e
+                os processos antigos precisam revezar o tempo de execução com
+                processos que acabaram de chegar.
+            \item Similarmente, o FCFS também cumpre poucos deadlines, pois os
+                processos novos se acumulam e precisam esperar os antigos terminarem
+                primeiro.
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \begin{itemize}
+        \justifying
+        \item Por fim, o SRTN parece ser bem melhor que os demais, pois ele é o
+            único que prioriza de alguma forma os processos que terminam em
+            menos tempo.
+
+        \item Talvez se estivéssemos testando o Round-Robin em um ambiente
+            favorável, poderíamos ver ele cumprindo mais deadlines, mas de fato, o
+            esperado era que o SRTN fosse o melhor nesse quesito devido ao que
+            foi comentado.
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \centering
+        {\huge Obrigado!}
+
+        $\\$
+
+        Lucas e Marcos
+
+    \end{frame}
 \end{document}
